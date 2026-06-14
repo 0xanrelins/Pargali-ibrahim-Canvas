@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ResponsiveGridLayout,
-  noCompactor,
+  getCompactor,
   useContainerWidth,
   type Layout,
+  type LayoutItem,
   type ResponsiveLayouts,
 } from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
@@ -24,11 +25,23 @@ import { WidgetSelect } from './WidgetSelect'
 import { loadTheme, saveTheme, type Theme } from './themeStorage'
 
 const RESIZE_HANDLES = ['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne'] as const
+const OVERLAP_COMPACTOR = getCompactor(null, true)
 
 function App() {
   const { width, containerRef, mounted } = useContainerWidth()
   const [workspace, setWorkspace] = useState<WorkspaceState>(loadWorkspace)
   const [theme, setTheme] = useState<Theme>(loadTheme)
+  const [stackOrder, setStackOrder] = useState<string[]>(
+    () => loadWorkspace().activePanels,
+  )
+
+  useEffect(() => {
+    setStackOrder((prev) => {
+      const kept = prev.filter((id) => workspace.activePanels.includes(id))
+      const added = workspace.activePanels.filter((id) => !kept.includes(id))
+      return [...kept, ...added]
+    })
+  }, [workspace.activePanels])
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -52,6 +65,46 @@ function App() {
       })
     },
     [],
+  )
+
+  const bringToFront = useCallback((panelId: string) => {
+    setStackOrder((prev) => [...prev.filter((id) => id !== panelId), panelId])
+  }, [])
+
+  const handleDragStart = useCallback(
+    (_layout: Layout, _oldItem: LayoutItem | null, newItem: LayoutItem | null) => {
+      if (newItem?.i) bringToFront(newItem.i)
+    },
+    [bringToFront],
+  )
+
+  const handleDragStop = useCallback(
+    (_layout: Layout, _oldItem: LayoutItem | null, newItem: LayoutItem | null) => {
+      if (newItem?.i) bringToFront(newItem.i)
+    },
+    [bringToFront],
+  )
+
+  const handleResizeStart = useCallback(
+    (_layout: Layout, _oldItem: LayoutItem | null, newItem: LayoutItem | null) => {
+      if (newItem?.i) bringToFront(newItem.i)
+    },
+    [bringToFront],
+  )
+
+  const handleResizeStop = useCallback(
+    (_layout: Layout, _oldItem: LayoutItem | null, newItem: LayoutItem | null) => {
+      if (newItem?.i) bringToFront(newItem.i)
+    },
+    [bringToFront],
+  )
+
+  const panelZIndex = useCallback(
+    (panelId: string) => {
+      const index = stackOrder.indexOf(panelId)
+      return index === -1 ? 1 : index + 1
+    },
+    [stackOrder],
   )
 
   const handleTogglePanel = useCallback((panelId: string) => {
@@ -95,13 +148,21 @@ function App() {
             cols={COLS}
             rowHeight={32}
             margin={[8, 8]}
-            compactor={noCompactor}
+            compactor={OVERLAP_COMPACTOR}
             dragConfig={{ enabled: true, cancel: '.panel-close' }}
             resizeConfig={{ enabled: true, handles: RESIZE_HANDLES }}
             onLayoutChange={handleLayoutChange}
+            onDragStart={handleDragStart}
+            onDragStop={handleDragStop}
+            onResizeStart={handleResizeStart}
+            onResizeStop={handleResizeStop}
           >
             {visiblePanels.map((panel) => (
-              <section key={panel.id} className="panel">
+              <section
+                key={panel.id}
+                className="panel"
+                style={{ zIndex: panelZIndex(panel.id) }}
+              >
                 <div className="panel-handle">
                   <div className="panel-handle-left">
                     <span className="panel-title">{panel.title}</span>

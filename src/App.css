@@ -204,7 +204,7 @@
   border-radius: 8px;
   box-shadow: 0 4px 24px var(--shadow);
   cursor: grab;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .panel:active {
@@ -220,6 +220,12 @@
   background: var(--panel-header-bg);
   border-bottom: 1px solid var(--panel-border);
   user-select: none;
+  pointer-events: none;
+}
+
+.panel-handle-left,
+.panel-close {
+  pointer-events: auto;
 }
 
 .panel-handle-left {
@@ -292,6 +298,8 @@
   min-height: 0;
   overflow: auto;
   font-size: 0.75rem;
+  pointer-events: auto;
+  border-radius: 0 0 8px 8px;
 }
 
 .panel-content {
@@ -454,7 +462,7 @@
 
 .react-grid-item.resizing,
 .react-grid-item.react-draggable-dragging {
-  z-index: 10;
+  z-index: 100 !important;
 }
 
 .react-grid-item.react-grid-placeholder {
@@ -470,7 +478,8 @@
   background-image: none !important;
   padding: 0 !important;
   transform: none !important;
-  z-index: 20;
+  z-index: 50;
+  pointer-events: auto !important;
 }
 
 .react-resizable-handle:hover {
@@ -485,7 +494,7 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 10px;
+  width: 12px;
   height: auto !important;
   margin-top: 0 !important;
   cursor: ew-resize;
@@ -496,7 +505,7 @@
   left: auto;
   top: 0;
   bottom: 0;
-  width: 10px;
+  width: 12px;
   height: auto !important;
   margin-top: 0 !important;
   cursor: ew-resize;
@@ -506,7 +515,7 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 10px;
+  height: 12px;
   width: auto !important;
   margin-left: 0 !important;
   cursor: ns-resize;
@@ -517,7 +526,7 @@
   top: auto;
   left: 0;
   right: 0;
-  height: 10px;
+  height: 12px;
   width: auto !important;
   margin-left: 0 !important;
   cursor: ns-resize;
