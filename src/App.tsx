@@ -144,8 +144,8 @@ function App() {
     <div className="terminal">
       <header className="terminal-header">
         <div className="terminal-header-title">
-          <img className="terminal-logo" src="/sirius-logo.png" alt="" width={28} height={24} />
-          <h1>Sirius</h1>
+          <img className="terminal-logo" src="/ibrahim-emoji-preview.png" alt="" width={28} height={28} />
+          <h1>PargalıIbrahim</h1>
         </div>
 
         <div className="terminal-header-actions">

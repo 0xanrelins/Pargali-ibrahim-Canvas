@@ -21,7 +21,7 @@ export function loadTheme(): Theme {
   } catch {
     // ignore
   }
-  return 'dark'
+  return 'sirius-i'
 }
 
 export function saveTheme(theme: Theme) {

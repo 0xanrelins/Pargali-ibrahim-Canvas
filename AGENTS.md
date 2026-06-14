@@ -1,4 +1,4 @@
-# Sirius Canvas — Agent Context
+# PargalıIbrahim Canvas — Agent Context
 
 ## Version baseline
 
@@ -36,6 +36,7 @@ Kısa, factual, gelecekteki agent tek okumada anlasın.
 | 2026-06-14 | `34fc32c` | Finer 36-col grid, layout toggle fix, theme docs |
 | 2026-06-14 | `af4d22f` | Persist on drag/resize stop; `gridVersion` fixes refresh reset; `lgLayoutEqual` mount guard |
 | 2026-06-14 | `af20477` | `docs/Sirius-Terminal-Theme.md`: widget min boyut tablosu (grid + yaklaşık px) |
+| 2026-06-14 | — | Proje adı **PargalıIbrahim Canvas**; Ibrahim logo/favicon; header **PargalıIbrahim** |
 
 ## Goal
 
@@ -46,19 +47,17 @@ Build a **modular trading terminal**: draggable/resizable widget grid, persisten
 - Vite + React 19 + TypeScript + `react-grid-layout` v2
 - **Responsive bootstrap:** 3 breakpoints (lg/md/sm, 36/24/12 cols); `rowHeight` 11px; only **lg** layout persisted; md/sm auto-stacked from lg order
 - **Per-widget minW/minH** in `panels.ts`; default open size = min (ideal size)
-- 6 widget types — placeholder content (`PanelContent.tsx`)
-- 3 themes: Dark, Light, **Sirius I** (`sirius-i`) — primary design target
-- Header: logo, theme + widget dropdowns (shared `dropdown-*` styles)
+- 6 widget types — placeholder content (`PanelContent.tsx`); tasarım rehberi: `docs/SIRIUS-I-WIDGET-GUIDE.md`
+- 3 themes: Dark, Light, **Sirius I** (`sirius-i`) — **default for new users** (`loadTheme` → `sirius-i`, `index.html` `data-theme`)
+- Header: **PargalıIbrahim** branding, Ibrahim logo/favicon (Sirius seti `sirius-*.png` yedek), theme + widget dropdowns
 - **8-direction resize:** global invisible handles (s/n/e/w + corners)
 - **Allow overlap:** panels can stack; last dragged/resized on top (z-index)
 - Layout key: `sirius-terminal-workspace` (stores `{ activePanels, layout, gridVersion }`); persist on **drag/resize stop**; `onLayoutChange` sync-only
 
 ## Where we're going
 
-1. Sirius I as default theme for new users
-2. Widget design guide (`docs/SIRIUS-I-WIDGET-GUIDE.md`)
-3. Real panel content — charts, order book, WebSocket/API
-4. GitHub remote + push
+1. Real panel content — charts, order book, WebSocket/API
+2. GitHub remote + push
 
 ## Key files
 
@@ -74,6 +73,7 @@ Build a **modular trading terminal**: draggable/resizable widget grid, persisten
 | `src/WidgetSelect.tsx` | Multi-select dropdown |
 | `vite.config.ts` | `process.env` defines (required for drag) |
 | `docs/Sirius-Terminal-Theme.md` | Tema + kabuk rehberi |
+| `docs/SIRIUS-I-WIDGET-GUIDE.md` | Sirius I widget içerik rehberi |
 
 ## Run
 

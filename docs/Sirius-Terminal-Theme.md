@@ -1,6 +1,6 @@
-# Sirius Terminal — Tema & Kabuk Rehberi
+# PargalıIbrahim Canvas — Tema & Kabuk Rehberi
 
-Sirius Canvas’ın görsel dili ve kabuk kuralları. Tüm renkler CSS değişkenleriyle yönetilir; bileşenler ortak class’ları paylaşır.
+PargalıIbrahim Canvas’ın görsel dili ve kabuk kuralları. Tüm renkler CSS değişkenleriyle yönetilir; bileşenler ortak class’ları paylaşır.
 
 **Kaynak dosyalar**
 
@@ -52,7 +52,7 @@ Soft dark, neredeyse siyah zemin. Nötr gri UI; renkli vurgu yok — sadece bid/
 | Özellik | Değer |
 |---------|-------|
 | Border radius | `2px` |
-| Header | Logo + **Sirius**, sıkışık padding, alt border yok |
+| Header | Logo + **PargalıIbrahim**, sıkışık padding, alt border yok |
 | Dropdown | Ghost trigger, `#2a2a2a` border, menü gölgesiz |
 | Panel başlık | Normal case, bar yok, kompakt padding |
 | × kapatma | Sadece panel hover’da görünür |
@@ -65,7 +65,7 @@ Soft dark, neredeyse siyah zemin. Nötr gri UI; renkli vurgu yok — sadece bid/
 
 ## Dark tema
 
-Varsayılan fallback (`loadTheme` → `dark`). Klasik terminal — mavi UI vurgusu, belirgin panel border.
+Klasik terminal — mavi UI vurgusu, belirgin panel border. Kullanıcı dropdown’dan seçebilir; varsayılan artık Sirius I.
 
 ### Özet
 
@@ -139,6 +139,7 @@ Widget min boyutları (`panels.ts`):
 3. Meta: `src/panels.ts` — `minW/minH` = ideal açılış boyutu
 4. İçerik: `src/PanelContent.tsx` — yeni `case`
 5. Tema değişikliği: önce `index.css`; Sirius I özel görünüm → `App.css` override
+6. Widget içerik kuralları: [`SIRIUS-I-WIDGET-GUIDE.md`](./SIRIUS-I-WIDGET-GUIDE.md)
 
 ---
 
