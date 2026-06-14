@@ -35,6 +35,7 @@ Kısa, factual, gelecekteki agent tek okumada anlasın.
 | 2026-06-14 | `621716d` | 36-col grid; toggle layout fix; min default size; scroll shell; `docs/Sirius-Terminal-Theme.md` |
 | 2026-06-14 | `34fc32c` | Finer 36-col grid, layout toggle fix, theme docs |
 | 2026-06-14 | `af4d22f` | Persist on drag/resize stop; `gridVersion` fixes refresh reset; `lgLayoutEqual` mount guard |
+| 2026-06-14 | `af20477` | `docs/Sirius-Terminal-Theme.md`: widget min boyut tablosu (grid + yaklaşık px) |
 
 ## Goal
 

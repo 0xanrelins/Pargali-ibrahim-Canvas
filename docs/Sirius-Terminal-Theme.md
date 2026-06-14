@@ -119,14 +119,16 @@ Tam liste: `src/index.css` → `[data-theme='light']`.
 
 Widget min boyutları (`panels.ts`):
 
-| Widget | minW × minH (lg) |
-|--------|------------------|
-| Chart | 12 × 12 |
-| Order Book | 9 × 9 |
-| Positions | 6 × 6 |
-| Watchlist | 6 × 6 |
-| Recent Trades | 6 × 6 |
-| Ticker | 3 × 3 |
+| Widget | minW × minH (grid) | Yaklaşık px* |
+|--------|-------------------|--------------|
+| Chart | 12 × 12 | ~%33 genişlik × 132px yükseklik |
+| Order Book | 9 × 9 | ~%25 × 99px |
+| Positions | 6 × 6 | ~%17 × 66px |
+| Watchlist | 6 × 6 | ~%17 × 66px |
+| Recent Trades | 6 × 6 | ~%17 × 66px |
+| Ticker | 3 × 3 | ~%8 × 33px |
+
+\* Genişlik viewport’a göre değişir (`kolon = ekran_genişliği / 36`). Yükseklik: `h × 11px`.
 
 ---
 
