@@ -34,7 +34,7 @@ Kısa, factual, gelecekteki agent tek okumada anlasın.
 | 2026-06-14 | `d293bf1` | Allow overlap + z-index stack; 8-handle edge fix with overlap |
 | 2026-06-14 | `621716d` | 36-col grid; toggle layout fix; min default size; scroll shell; `docs/Sirius-Terminal-Theme.md` |
 | 2026-06-14 | `34fc32c` | Finer 36-col grid, layout toggle fix, theme docs |
-| 2026-06-14 | `33a1f38` | Persist on drag/resize stop; `gridVersion` fixes refresh reset; `lgLayoutEqual` mount guard |
+| 2026-06-14 | `af4d22f` | Persist on drag/resize stop; `gridVersion` fixes refresh reset; `lgLayoutEqual` mount guard |
 
 ## Goal
 
