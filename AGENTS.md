@@ -29,26 +29,30 @@ Kısa, factual, gelecekteki agent tek okumada anlasın.
 |------|-----|---------|
 | 2026-06-14 | `v0.1.0` / `5966bf3` | İlk baseline: draggable grid, layout persistence, Sirius I theme, custom theme + widget dropdowns, logo/favicon, header branding |
 | 2026-06-14 | `9023631` | `AGENTS.md`: LLM context, `v0.1.0` baseline notu, journey kuralı (her commit'te güncelle) |
+| 2026-06-14 | `33420ef` | Responsive bootstrap: lg-only layout save, md/sm auto-stack, per-widget minW/minH |
 
 ## Goal
 
 Build a **modular trading terminal**: draggable/resizable widget grid, persistent layout, live market data (future).
 
-## Where we are (v0.1.0)
+## Where we are
 
 - Vite + React 19 + TypeScript + `react-grid-layout` v2
-- Responsive grid (lg/md/sm), layout saved to `localStorage` (`sirius-terminal-workspace`)
-- 6 widget types — placeholder content only (`PanelContent.tsx`)
+- **Responsive bootstrap:** 3 breakpoints (lg/md/sm, 12/8/4 cols); only **lg** layout persisted; md/sm auto-stacked from lg order
+- **Per-widget minW/minH** in `panels.ts` (Ticker minW: 1, Chart minW: 4, etc.)
+- 6 widget types — placeholder content (`PanelContent.tsx`)
 - 3 themes: Dark, Light, **Sirius I** (`sirius-i`) — primary design target
-- Header: Sirius logo + title, theme dropdown, multi-select widget dropdown
-- Sirius I: dark `#0a0a0a`, bid `#77a898`, ask `#9e8585`, 2px radius, subtle borders
+- Header: logo, theme + widget dropdowns (shared `dropdown-*` styles)
+- Layout key: `sirius-terminal-workspace` (stores `{ activePanels, layout }`)
 
 ## Where we're going
 
-1. Sirius I as default theme for new users
-2. Widget design guide (`docs/SIRIUS-I-WIDGET-GUIDE.md`)
-3. Real panel content — charts, order book, WebSocket/API
-4. GitHub remote + push
+1. **Resize handles** (8-direction) — next experiment
+2. **Allow overlap** — RGL demo #16
+3. Sirius I as default theme for new users
+4. Widget design guide (`docs/SIRIUS-I-WIDGET-GUIDE.md`)
+5. Real panel content — charts, order book, WebSocket/API
+6. GitHub remote + push
 
 ## Key files
 

@@ -41,28 +41,28 @@ export const PANEL_CATALOG: PanelDef[] = [
     title: 'Positions',
     hint: 'Open trades',
     kind: 'positions',
-    grid: { x: 8, y: 6, w: 4, h: 4, minW: 3, minH: 3 },
+    grid: { x: 8, y: 6, w: 4, h: 4, minW: 2, minH: 2 },
   },
   {
     id: 'watchlist',
     title: 'Watchlist',
     hint: 'Symbols',
     kind: 'watchlist',
-    grid: { x: 0, y: 10, w: 12, h: 3, minW: 4, minH: 2 },
+    grid: { x: 0, y: 10, w: 12, h: 3, minW: 2, minH: 2 },
   },
   {
     id: 'trades',
     title: 'Recent Trades',
     hint: 'Live feed',
     kind: 'trades',
-    grid: { x: 0, y: 13, w: 6, h: 4, minW: 4, minH: 3 },
+    grid: { x: 0, y: 13, w: 6, h: 4, minW: 2, minH: 2 },
   },
   {
     id: 'ticker',
     title: 'Ticker',
     hint: 'Market stats',
     kind: 'ticker',
-    grid: { x: 6, y: 13, w: 6, h: 4, minW: 3, minH: 3 },
+    grid: { x: 6, y: 13, w: 6, h: 4, minW: 1, minH: 1 },
   },
 ]
 

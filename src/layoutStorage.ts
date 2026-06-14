@@ -15,69 +15,29 @@ export type WorkspaceState = {
   layouts: ResponsiveLayouts
 }
 
+/** Persisted shape — only lg layout is stored; md/sm are derived on load. */
+type StoredWorkspace = {
+  activePanels: string[]
+  layout: Layout
+}
+
 function emptyLayouts(): ResponsiveLayouts {
   return Object.fromEntries(
     BREAKPOINT_KEYS.map((bp) => [bp, []]),
   ) as ResponsiveLayouts
 }
 
-function buildLayoutForBreakpoint(
-  activePanels: string[],
-  breakpoint: BreakpointKey,
-): Layout {
-  const cols = COLS[breakpoint]
-  let y = 0
-
-  return activePanels.map((id) => {
-    const panel = getPanelById(id)
-    if (!panel) return { i: id, x: 0, y, w: cols, h: 4 }
-
-    if (breakpoint === 'lg') {
-      return { i: panel.id, ...panel.grid }
-    }
-
-    const item: LayoutItem = {
-      i: panel.id,
-      x: 0,
-      y,
-      w: cols,
-      h: panel.grid.h,
-      minW: Math.min(panel.grid.minW ?? 2, cols),
-      minH: panel.grid.minH,
-    }
-    y += item.h
-    return item
-  })
-}
-
-function buildDefaultWorkspace(): WorkspaceState {
-  const activePanels = [...DEFAULT_ACTIVE_PANELS]
-  const layouts = Object.fromEntries(
-    BREAKPOINT_KEYS.map((bp) => [
-      bp,
-      buildLayoutForBreakpoint(activePanels, bp),
-    ]),
-  ) as ResponsiveLayouts
-
-  return { activePanels, layouts }
-}
-
 function mergeLayoutItem(panelId: string, saved?: LayoutItem): LayoutItem {
   const panel = getPanelById(panelId)
   if (!panel) return { i: panelId, x: 0, y: 0, w: 4, h: 4 }
   if (!saved) return { i: panel.id, ...panel.grid }
-  return { ...panel.grid, ...saved, i: panel.id }
+  return { ...panel.grid, ...saved, i: panel.id, minW: panel.grid.minW, minH: panel.grid.minH }
 }
 
-function normalizeBreakpointLayout(
-  activePanels: string[],
-  breakpoint: BreakpointKey,
-  saved: Layout = [],
-): Layout {
+function normalizeLgLayout(activePanels: string[], saved: Layout = []): Layout {
   if (activePanels.length === 0) return []
 
-  const cols = COLS[breakpoint]
-  let stackY = 0
+  const cols = COLS.lg
 
   return activePanels.map((id) => {
     const savedItem = saved.find((entry) => entry.i === id)
@@ -90,33 +50,74 @@ function normalizeBreakpointLayout(
         ...merged,
         w: width,
         x: Math.min(merged.x, Math.max(0, cols - width)),
-        minW: Math.min(merged.minW ?? 2, cols),
+        minW: Math.min(merged.minW ?? 1, cols),
       }
     }
 
-    if (!panel) return { i: id, x: 0, y: stackY, w: cols, h: 4 }
+    if (!panel) return { i: id, x: 0, y: 0, w: 4, h: 4 }
+    return { i: panel.id, ...panel.grid }
+  })
+}
 
-    if (breakpoint === 'lg') {
-      return { i: panel.id, ...panel.grid }
-    }
+/** Stack panels on md/sm using lg visual order (top-to-bottom, left-to-right). */
+function buildStackedLayout(
+  activePanels: string[],
+  lgLayout: Layout,
+  breakpoint: BreakpointKey,
+): Layout {
+  const cols = COLS[breakpoint]
+  const ordered = [...activePanels].sort((a, b) => {
+    const ia = lgLayout.find((item) => item.i === a)
+    const ib = lgLayout.find((item) => item.i === b)
+    const ya = ia?.y ?? 0
+    const yb = ib?.y ?? 0
+    if (ya !== yb) return ya - yb
+    return (ia?.x ?? 0) - (ib?.x ?? 0)
+  })
 
+  let y = 0
+  return ordered.map((id) => {
+    const lgItem = lgLayout.find((item) => item.i === id)
+    const panel = getPanelById(id)
+    const h = lgItem?.h ?? panel?.grid.h ?? 4
     const item: LayoutItem = {
-      i: panel.id,
+      i: id,
       x: 0,
-      y: stackY,
+      y,
       w: cols,
-      h: panel.grid.h,
-      minW: Math.min(panel.grid.minW ?? 2, cols),
-      minH: panel.grid.minH,
+      h,
+      minW: Math.min(panel?.grid.minW ?? 1, cols),
+      minH: panel?.grid.minH ?? 1,
     }
-    stackY += item.h
+    y += h
     return item
   })
 }
 
+function expandLayouts(activePanels: string[], lgLayout: Layout): ResponsiveLayouts {
+  const lg = normalizeLgLayout(activePanels, lgLayout)
+  return {
+    lg,
+    md: buildStackedLayout(activePanels, lg, 'md'),
+    sm: buildStackedLayout(activePanels, lg, 'sm'),
+  }
+}
+
+function buildDefaultWorkspace(): WorkspaceState {
+  const activePanels = [...DEFAULT_ACTIVE_PANELS]
+  const lg = normalizeLgLayout(
+    activePanels,
+    activePanels.map((id) => {
+      const panel = getPanelById(id)
+      return panel ? { i: panel.id, ...panel.grid } : { i: id, x: 0, y: 0, w: 4, h: 4 }
+    }),
+  )
+  return { activePanels, layouts: expandLayouts(activePanels, lg) }
+}
+
 function normalizeWorkspace(
   activePanels: string[],
-  layouts: Partial<ResponsiveLayouts>,
+  lgLayout: Layout,
 ): WorkspaceState {
   const catalogIds = new Set(PANEL_CATALOG.map((panel) => panel.id))
   const panels = activePanels.filter((id) => catalogIds.has(id))
@@ -125,14 +126,7 @@ function normalizeWorkspace(
     return { activePanels: [], layouts: emptyLayouts() }
   }
 
-  const normalized = Object.fromEntries(
-    BREAKPOINT_KEYS.map((bp) => [
-      bp,
-      normalizeBreakpointLayout(panels, bp, layouts[bp]),
-    ]),
-  ) as ResponsiveLayouts
-
-  return { activePanels: panels, layouts: normalized }
+  return { activePanels: panels, layouts: expandLayouts(panels, lgLayout) }
 }
 
 function loadLegacyWorkspace(): WorkspaceState | null {
@@ -148,17 +142,13 @@ function loadLegacyWorkspace(): WorkspaceState | null {
     )
     const panels = activePanels.length > 0 ? activePanels : [...DEFAULT_ACTIVE_PANELS]
 
-    return normalizeWorkspace(panels, { lg: saved.filter((item) => panels.includes(item.i)) })
+    return normalizeWorkspace(
+      panels,
+      saved.filter((item) => panels.includes(item.i)),
+    )
   } catch {
     return null
   }
-}
-
-function migrateSingleLayout(
-  activePanels: string[],
-  layout: LayoutItem[],
-): WorkspaceState {
-  return normalizeWorkspace(activePanels, { lg: layout })
 }
 
 export function loadWorkspace(): WorkspaceState {
@@ -166,15 +156,15 @@ export function loadWorkspace(): WorkspaceState {
     const raw = localStorage.getItem(WORKSPACE_STORAGE_KEY)
     if (raw) {
       const data = JSON.parse(raw) as Partial<
-        WorkspaceState & { layout?: LayoutItem[] }
+        StoredWorkspace & WorkspaceState & { layout?: LayoutItem[] }
       >
 
       if (Array.isArray(data.activePanels)) {
-        if (data.layouts) {
-          return normalizeWorkspace(data.activePanels, data.layouts)
-        }
         if (Array.isArray(data.layout)) {
-          return migrateSingleLayout(data.activePanels, data.layout)
+          return normalizeWorkspace(data.activePanels, data.layout)
+        }
+        if (data.layouts?.lg) {
+          return normalizeWorkspace(data.activePanels, data.layouts.lg)
         }
       }
     }
@@ -186,34 +176,19 @@ export function loadWorkspace(): WorkspaceState {
 }
 
 export function saveWorkspace(state: WorkspaceState) {
-  localStorage.setItem(WORKSPACE_STORAGE_KEY, JSON.stringify(state))
+  const payload: StoredWorkspace = {
+    activePanels: state.activePanels,
+    layout: state.layouts.lg ?? [],
+  }
+  localStorage.setItem(WORKSPACE_STORAGE_KEY, JSON.stringify(payload))
 }
 
-function appendToBreakpoint(
-  layout: Layout,
-  panelId: string,
-  breakpoint: BreakpointKey,
-): Layout {
+function appendToLg(layout: Layout, panelId: string): Layout {
   const panel = getPanelById(panelId)
   if (!panel) return layout
 
   const bottom = layout.reduce((max, item) => Math.max(max, item.y + item.h), 0)
-  const cols = COLS[breakpoint]
-
-  const item =
-    breakpoint === 'lg'
-      ? createLayoutItem(panel, bottom)
-      : {
-          i: panel.id,
-          x: 0,
-          y: bottom,
-          w: cols,
-          h: panel.grid.h,
-          minW: Math.min(panel.grid.minW ?? 2, cols),
-          minH: panel.grid.minH,
-        }
-
-  return [...layout, item]
+  return [...layout, createLayoutItem(panel, bottom)]
 }
 
 export function appendPanel(
@@ -223,14 +198,8 @@ export function appendPanel(
   if (state.activePanels.includes(panelId)) return null
   if (!getPanelById(panelId)) return null
 
-  const layouts = Object.fromEntries(
-    BREAKPOINT_KEYS.map((bp) => [
-      bp,
-      appendToBreakpoint(state.layouts[bp] ?? [], panelId, bp),
-    ]),
-  ) as ResponsiveLayouts
-
-  return normalizeWorkspace([...state.activePanels, panelId], layouts)
+  const lg = appendToLg(state.layouts.lg ?? [], panelId)
+  return normalizeWorkspace([...state.activePanels, panelId], lg)
 }
 
 export function removePanel(
@@ -239,15 +208,9 @@ export function removePanel(
 ): WorkspaceState | null {
   if (!state.activePanels.includes(panelId)) return null
 
-  const layouts = Object.fromEntries(
-    BREAKPOINT_KEYS.map((bp) => [
-      bp,
-      (state.layouts[bp] ?? []).filter((item) => item.i !== panelId),
-    ]),
-  ) as ResponsiveLayouts
-
+  const lg = (state.layouts.lg ?? []).filter((item) => item.i !== panelId)
   return normalizeWorkspace(
     state.activePanels.filter((id) => id !== panelId),
-    layouts,
+    lg,
   )
 }
