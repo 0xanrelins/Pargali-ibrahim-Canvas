@@ -11,9 +11,10 @@ import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 import './App.css'
 import { PanelContent } from './PanelContent'
-import { BREAKPOINTS, COLS, ROW_HEIGHT } from './breakpoints'
+import { BREAKPOINTS, COLS, ROW_HEIGHT, breakpointFromWidth } from './breakpoints'
 import {
   appendPanel,
+  lgLayoutEqual,
   loadWorkspace,
   removePanel,
   saveWorkspace,
@@ -59,12 +60,27 @@ function App() {
   const handleLayoutChange = useCallback(
     (_layout: Layout, layouts: ResponsiveLayouts) => {
       setWorkspace((prev) => {
-        const next = { ...prev, layouts }
+        const nextLg = layouts.lg ?? []
+        if (lgLayoutEqual(prev.layouts.lg, nextLg)) return prev
+        return { ...prev, layouts }
+      })
+    },
+    [],
+  )
+
+  const persistLayoutInteraction = useCallback(
+    (layout: Layout) => {
+      setWorkspace((prev) => {
+        const bp = breakpointFromWidth(width)
+        const next: WorkspaceState = {
+          ...prev,
+          layouts: { ...prev.layouts, [bp]: layout },
+        }
         saveWorkspace(next)
         return next
       })
     },
-    [],
+    [width],
   )
 
   const bringToFront = useCallback((panelId: string) => {
@@ -79,10 +95,11 @@ function App() {
   )
 
   const handleDragStop = useCallback(
-    (_layout: Layout, _oldItem: LayoutItem | null, newItem: LayoutItem | null) => {
+    (layout: Layout, _oldItem: LayoutItem | null, newItem: LayoutItem | null) => {
       if (newItem?.i) bringToFront(newItem.i)
+      persistLayoutInteraction(layout)
     },
-    [bringToFront],
+    [bringToFront, persistLayoutInteraction],
   )
 
   const handleResizeStart = useCallback(
@@ -93,10 +110,11 @@ function App() {
   )
 
   const handleResizeStop = useCallback(
-    (_layout: Layout, _oldItem: LayoutItem | null, newItem: LayoutItem | null) => {
+    (layout: Layout, _oldItem: LayoutItem | null, newItem: LayoutItem | null) => {
       if (newItem?.i) bringToFront(newItem.i)
+      persistLayoutInteraction(layout)
     },
-    [bringToFront],
+    [bringToFront, persistLayoutInteraction],
   )
 
   const panelZIndex = useCallback(

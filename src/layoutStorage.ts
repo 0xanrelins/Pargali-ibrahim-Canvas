@@ -23,7 +23,10 @@ export type WorkspaceState = {
 type StoredWorkspace = {
   activePanels: string[]
   layout: Layout
+  gridVersion?: number
 }
+
+const CURRENT_GRID_VERSION = 2
 
 function emptyLayouts(): ResponsiveLayouts {
   return Object.fromEntries(
@@ -33,8 +36,6 @@ function emptyLayouts(): ResponsiveLayouts {
 
 function migrateFromLegacyCols(layout: Layout): Layout {
   if (layout.length === 0) return layout
-  const maxW = Math.max(...layout.map((item) => item.w))
-  if (maxW > LEGACY_LG_COLS) return layout
 
   return layout.map((item) => ({
     ...item,
@@ -47,6 +48,28 @@ function migrateFromLegacyCols(layout: Layout): Layout {
     maxW: item.maxW != null ? item.maxW * GRID_SCALE : undefined,
     maxH: item.maxH != null ? item.maxH * GRID_SCALE : undefined,
   }))
+}
+
+function needsLegacyColMigration(
+  layout: Layout,
+  gridVersion?: number,
+  source: 'workspace' | 'legacy' = 'workspace',
+): boolean {
+  if (gridVersion === CURRENT_GRID_VERSION) return false
+  if (layout.length === 0) return false
+  // Already saved on 36-col workspace before gridVersion field existed
+  if (source === 'workspace' && gridVersion === undefined) return false
+  const maxW = Math.max(...layout.map((item) => item.w))
+  return maxW <= LEGACY_LG_COLS
+}
+
+function prepareStoredLayout(
+  layout: Layout,
+  gridVersion?: number,
+  source: 'workspace' | 'legacy' = 'workspace',
+): Layout {
+  if (!needsLegacyColMigration(layout, gridVersion, source)) return layout
+  return migrateFromLegacyCols(layout)
 }
 
 function attachCatalogConstraints(item: LayoutItem): LayoutItem {
@@ -67,10 +90,6 @@ function attachCatalogConstraints(item: LayoutItem): LayoutItem {
     maxW: item.maxW ?? panel.grid.maxW,
     maxH: item.maxH ?? panel.grid.maxH,
   }
-}
-
-function clampLgLayout(layout: Layout): Layout {
-  return layout.map((item) => attachCatalogConstraints(item))
 }
 
 function lgLayoutForPanels(activePanels: string[], lgLayout: Layout): Layout {
@@ -121,31 +140,6 @@ function buildStackedLayout(
   })
 }
 
-function expandLayouts(activePanels: string[], lgLayout: Layout): ResponsiveLayouts {
-  const lg = lgLayoutForPanels(activePanels, lgLayout)
-  return {
-    lg,
-    md: buildStackedLayout(activePanels, lg, 'md'),
-    sm: buildStackedLayout(activePanels, lg, 'sm'),
-  }
-}
-
-/** Load / legacy path — migrate cols, merge missing items from catalog. */
-function normalizeWorkspace(
-  activePanels: string[],
-  lgLayout: Layout,
-): WorkspaceState {
-  const catalogIds = new Set(PANEL_CATALOG.map((panel) => panel.id))
-  const panels = activePanels.filter((id) => catalogIds.has(id))
-
-  if (panels.length === 0) {
-    return { activePanels: [], layouts: emptyLayouts() }
-  }
-
-  const migrated = migrateFromLegacyCols(lgLayout)
-  return { activePanels: panels, layouts: expandLayouts(panels, migrated) }
-}
-
 /** Toggle path — preserve lg geometry; only add/remove items, refresh md/sm. */
 function patchWorkspace(activePanels: string[], lgLayout: Layout): WorkspaceState {
   const catalogIds = new Set(PANEL_CATALOG.map((panel) => panel.id))
@@ -155,7 +149,7 @@ function patchWorkspace(activePanels: string[], lgLayout: Layout): WorkspaceStat
     return { activePanels: [], layouts: emptyLayouts() }
   }
 
-  const lg = clampLgLayout(lgLayout.filter((item) => panels.includes(item.i)))
+  const lg = lgLayoutForPanels(panels, lgLayout)
   return {
     activePanels: panels,
     layouts: {
@@ -172,7 +166,7 @@ function buildDefaultWorkspace(): WorkspaceState {
     const panel = getPanelById(id)
     return panel ? { i: panel.id, ...panel.grid } : { i: id, x: 0, y: 0, ...FALLBACK_GRID }
   })
-  return normalizeWorkspace(activePanels, catalogLayout)
+  return patchWorkspace(activePanels, catalogLayout)
 }
 
 function loadLegacyWorkspace(): WorkspaceState | null {
@@ -188,13 +182,32 @@ function loadLegacyWorkspace(): WorkspaceState | null {
     )
     const panels = activePanels.length > 0 ? activePanels : [...DEFAULT_ACTIVE_PANELS]
 
-    return normalizeWorkspace(
+    return loadStoredWorkspace(
       panels,
       saved.filter((item) => panels.includes(item.i)),
+      undefined,
+      'legacy',
     )
   } catch {
     return null
   }
+}
+
+function loadStoredWorkspace(
+  activePanels: string[],
+  layout: Layout,
+  gridVersion?: number,
+  source: 'workspace' | 'legacy' = 'workspace',
+): WorkspaceState {
+  const migrated = prepareStoredLayout(layout, gridVersion, source)
+  const state = patchWorkspace(activePanels, migrated)
+  if (
+    needsLegacyColMigration(layout, gridVersion, source) ||
+    (source === 'workspace' && gridVersion === undefined)
+  ) {
+    saveWorkspace(state)
+  }
+  return state
 }
 
 export function loadWorkspace(): WorkspaceState {
@@ -207,10 +220,10 @@ export function loadWorkspace(): WorkspaceState {
 
       if (Array.isArray(data.activePanels)) {
         if (Array.isArray(data.layout)) {
-          return normalizeWorkspace(data.activePanels, data.layout)
+          return loadStoredWorkspace(data.activePanels, data.layout, data.gridVersion)
         }
         if (data.layouts?.lg) {
-          return normalizeWorkspace(data.activePanels, data.layouts.lg)
+          return loadStoredWorkspace(data.activePanels, data.layouts.lg, data.gridVersion)
         }
       }
     }
@@ -225,8 +238,24 @@ export function saveWorkspace(state: WorkspaceState) {
   const payload: StoredWorkspace = {
     activePanels: state.activePanels,
     layout: state.layouts.lg ?? [],
+    gridVersion: CURRENT_GRID_VERSION,
   }
   localStorage.setItem(WORKSPACE_STORAGE_KEY, JSON.stringify(payload))
+}
+
+export function lgLayoutEqual(a: Layout = [], b: Layout = []): boolean {
+  if (a.length !== b.length) return false
+  const byId = new Map(b.map((item) => [item.i, item]))
+  return a.every((item) => {
+    const other = byId.get(item.i)
+    if (!other) return false
+    return (
+      item.x === other.x &&
+      item.y === other.y &&
+      item.w === other.w &&
+      item.h === other.h
+    )
+  })
 }
 
 function appendToLg(layout: Layout, panelId: string): Layout {

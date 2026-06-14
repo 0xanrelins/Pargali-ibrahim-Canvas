@@ -33,6 +33,8 @@ Kısa, factual, gelecekteki agent tek okumada anlasın.
 | 2026-06-14 | `42eec8c` | 8-direction invisible resize handles; edge handle transform fix |
 | 2026-06-14 | `d293bf1` | Allow overlap + z-index stack; 8-handle edge fix with overlap |
 | 2026-06-14 | `621716d` | 36-col grid; toggle layout fix; min default size; scroll shell; `docs/Sirius-Terminal-Theme.md` |
+| 2026-06-14 | `34fc32c` | Finer 36-col grid, layout toggle fix, theme docs |
+| 2026-06-14 | `33a1f38` | Persist on drag/resize stop; `gridVersion` fixes refresh reset; `lgLayoutEqual` mount guard |
 
 ## Goal
 
@@ -48,7 +50,7 @@ Build a **modular trading terminal**: draggable/resizable widget grid, persisten
 - Header: logo, theme + widget dropdowns (shared `dropdown-*` styles)
 - **8-direction resize:** global invisible handles (s/n/e/w + corners)
 - **Allow overlap:** panels can stack; last dragged/resized on top (z-index)
-- Layout key: `sirius-terminal-workspace` (stores `{ activePanels, layout }`)
+- Layout key: `sirius-terminal-workspace` (stores `{ activePanels, layout, gridVersion }`); persist on **drag/resize stop**; `onLayoutChange` sync-only
 
 ## Where we're going
 

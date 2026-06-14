@@ -16,3 +16,9 @@ export const ROW_HEIGHT = 11
 export type BreakpointKey = keyof typeof BREAKPOINTS
 
 export const BREAKPOINT_KEYS: BreakpointKey[] = ['lg', 'md', 'sm']
+
+export function breakpointFromWidth(width: number): BreakpointKey {
+  if (width >= BREAKPOINTS.lg) return 'lg'
+  if (width >= BREAKPOINTS.md) return 'md'
+  return 'sm'
+}
