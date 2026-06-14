@@ -32,6 +32,7 @@ Kısa, factual, gelecekteki agent tek okumada anlasın.
 | 2026-06-14 | `9f47cd1` | Responsive bootstrap: lg-only layout save, md/sm auto-stack, per-widget minW/minH |
 | 2026-06-14 | `42eec8c` | 8-direction invisible resize handles; edge handle transform fix |
 | 2026-06-14 | `d293bf1` | Allow overlap + z-index stack; 8-handle edge fix with overlap |
+| 2026-06-14 | `621716d` | 36-col grid; toggle layout fix; min default size; scroll shell; `docs/Sirius-Terminal-Theme.md` |
 
 ## Goal
 
@@ -40,8 +41,8 @@ Build a **modular trading terminal**: draggable/resizable widget grid, persisten
 ## Where we are
 
 - Vite + React 19 + TypeScript + `react-grid-layout` v2
-- **Responsive bootstrap:** 3 breakpoints (lg/md/sm, 12/8/4 cols); only **lg** layout persisted; md/sm auto-stacked from lg order
-- **Per-widget minW/minH** in `panels.ts` (Ticker minW: 1, Chart minW: 4, etc.)
+- **Responsive bootstrap:** 3 breakpoints (lg/md/sm, 36/24/12 cols); `rowHeight` 11px; only **lg** layout persisted; md/sm auto-stacked from lg order
+- **Per-widget minW/minH** in `panels.ts`; default open size = min (ideal size)
 - 6 widget types — placeholder content (`PanelContent.tsx`)
 - 3 themes: Dark, Light, **Sirius I** (`sirius-i`) — primary design target
 - Header: logo, theme + widget dropdowns (shared `dropdown-*` styles)
@@ -69,6 +70,7 @@ Build a **modular trading terminal**: draggable/resizable widget grid, persisten
 | `src/ThemeSelect.tsx` | Single-select dropdown |
 | `src/WidgetSelect.tsx` | Multi-select dropdown |
 | `vite.config.ts` | `process.env` defines (required for drag) |
+| `docs/Sirius-Terminal-Theme.md` | Tema + kabuk rehberi |
 
 ## Run
 

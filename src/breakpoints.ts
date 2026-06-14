@@ -5,10 +5,13 @@ export const BREAKPOINTS = {
 } as const
 
 export const COLS = {
-  lg: 12,
-  md: 8,
-  sm: 4,
+  lg: 36,
+  md: 24,
+  sm: 12,
 } as const
+
+/** 32px @ 12 cols → ~11px @ 36 cols (finer vertical snap, same visual height). */
+export const ROW_HEIGHT = 11
 
 export type BreakpointKey = keyof typeof BREAKPOINTS
 

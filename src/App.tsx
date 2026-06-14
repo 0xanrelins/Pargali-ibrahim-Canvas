@@ -11,7 +11,7 @@ import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 import './App.css'
 import { PanelContent } from './PanelContent'
-import { BREAKPOINTS, COLS } from './breakpoints'
+import { BREAKPOINTS, COLS, ROW_HEIGHT } from './breakpoints'
 import {
   appendPanel,
   loadWorkspace,
@@ -146,7 +146,7 @@ function App() {
             width={width}
             breakpoints={BREAKPOINTS}
             cols={COLS}
-            rowHeight={32}
+            rowHeight={ROW_HEIGHT}
             margin={[8, 8]}
             compactor={OVERLAP_COMPACTOR}
             dragConfig={{ enabled: true, cancel: '.panel-close' }}

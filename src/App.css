@@ -1,5 +1,6 @@
 .terminal {
   min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   background: var(--bg);
@@ -184,7 +185,9 @@
 
 .terminal-grid {
   flex: 1;
+  min-height: 0;
   padding: 0.5rem;
+  overflow: auto;
 }
 
 .empty-grid {

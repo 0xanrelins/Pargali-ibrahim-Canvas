@@ -27,42 +27,42 @@ export const PANEL_CATALOG: PanelDef[] = [
     title: 'Chart',
     hint: 'BTC/USDT · 1h',
     kind: 'chart',
-    grid: { x: 0, y: 0, w: 8, h: 10, minW: 4, minH: 4 },
+    grid: { x: 0, y: 0, w: 12, h: 12, minW: 12, minH: 12 },
   },
   {
     id: 'orderbook',
     title: 'Order Book',
     hint: 'Bids / Asks',
     kind: 'orderbook',
-    grid: { x: 8, y: 0, w: 4, h: 6, minW: 3, minH: 3 },
+    grid: { x: 12, y: 0, w: 9, h: 9, minW: 9, minH: 9 },
   },
   {
     id: 'positions',
     title: 'Positions',
     hint: 'Open trades',
     kind: 'positions',
-    grid: { x: 8, y: 6, w: 4, h: 4, minW: 2, minH: 2 },
+    grid: { x: 21, y: 0, w: 6, h: 6, minW: 6, minH: 6 },
   },
   {
     id: 'watchlist',
     title: 'Watchlist',
     hint: 'Symbols',
     kind: 'watchlist',
-    grid: { x: 0, y: 10, w: 12, h: 3, minW: 2, minH: 2 },
+    grid: { x: 0, y: 12, w: 6, h: 6, minW: 6, minH: 6 },
   },
   {
     id: 'trades',
     title: 'Recent Trades',
     hint: 'Live feed',
     kind: 'trades',
-    grid: { x: 0, y: 13, w: 6, h: 4, minW: 2, minH: 2 },
+    grid: { x: 0, y: 0, w: 6, h: 6, minW: 6, minH: 6 },
   },
   {
     id: 'ticker',
     title: 'Ticker',
     hint: 'Market stats',
     kind: 'ticker',
-    grid: { x: 6, y: 13, w: 6, h: 4, minW: 1, minH: 1 },
+    grid: { x: 0, y: 0, w: 3, h: 3, minW: 3, minH: 3 },
   },
 ]
 
@@ -73,15 +73,16 @@ export function getPanelById(id: string) {
 }
 
 export function createLayoutItem(panel: PanelDef, y: number): LayoutItem {
+  const { minW = 1, minH = 1, maxW, maxH, x } = panel.grid
   return {
     i: panel.id,
-    x: panel.grid.x,
+    x,
     y,
-    w: panel.grid.w,
-    h: panel.grid.h,
-    minW: panel.grid.minW,
-    minH: panel.grid.minH,
-    maxW: panel.grid.maxW,
-    maxH: panel.grid.maxH,
+    w: minW,
+    h: minH,
+    minW,
+    minH,
+    maxW,
+    maxH,
   }
 }
