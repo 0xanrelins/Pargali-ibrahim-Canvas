@@ -23,6 +23,8 @@ import { ThemeSelect } from './ThemeSelect'
 import { WidgetSelect } from './WidgetSelect'
 import { loadTheme, saveTheme, type Theme } from './themeStorage'
 
+const RESIZE_HANDLES = ['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne'] as const
+
 function App() {
   const { width, containerRef, mounted } = useContainerWidth()
   const [workspace, setWorkspace] = useState<WorkspaceState>(loadWorkspace)
@@ -95,7 +97,7 @@ function App() {
             margin={[8, 8]}
             compactor={noCompactor}
             dragConfig={{ enabled: true, cancel: '.panel-close' }}
-            resizeConfig={{ enabled: true }}
+            resizeConfig={{ enabled: true, handles: RESIZE_HANDLES }}
             onLayoutChange={handleLayoutChange}
           >
             {visiblePanels.map((panel) => (

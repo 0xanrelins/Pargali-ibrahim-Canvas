@@ -29,7 +29,8 @@ Kısa, factual, gelecekteki agent tek okumada anlasın.
 |------|-----|---------|
 | 2026-06-14 | `v0.1.0` / `5966bf3` | İlk baseline: draggable grid, layout persistence, Sirius I theme, custom theme + widget dropdowns, logo/favicon, header branding |
 | 2026-06-14 | `9023631` | `AGENTS.md`: LLM context, `v0.1.0` baseline notu, journey kuralı (her commit'te güncelle) |
-| 2026-06-14 | `33420ef` | Responsive bootstrap: lg-only layout save, md/sm auto-stack, per-widget minW/minH |
+| 2026-06-14 | `9f47cd1` | Responsive bootstrap: lg-only layout save, md/sm auto-stack, per-widget minW/minH |
+| 2026-06-14 | `817d416` | 8-direction invisible resize handles; edge handle transform fix |
 
 ## Goal
 
@@ -43,16 +44,16 @@ Build a **modular trading terminal**: draggable/resizable widget grid, persisten
 - 6 widget types — placeholder content (`PanelContent.tsx`)
 - 3 themes: Dark, Light, **Sirius I** (`sirius-i`) — primary design target
 - Header: logo, theme + widget dropdowns (shared `dropdown-*` styles)
+- **8-direction resize:** global handles (s/n/e/w + corners), invisible — no grip on hover
 - Layout key: `sirius-terminal-workspace` (stores `{ activePanels, layout }`)
 
 ## Where we're going
 
-1. **Resize handles** (8-direction) — next experiment
-2. **Allow overlap** — RGL demo #16
-3. Sirius I as default theme for new users
-4. Widget design guide (`docs/SIRIUS-I-WIDGET-GUIDE.md`)
-5. Real panel content — charts, order book, WebSocket/API
-6. GitHub remote + push
+1. **Allow overlap** — RGL demo #16 (next)
+2. Sirius I as default theme for new users
+3. Widget design guide (`docs/SIRIUS-I-WIDGET-GUIDE.md`)
+4. Real panel content — charts, order book, WebSocket/API
+5. GitHub remote + push
 
 ## Key files
 

@@ -464,26 +464,87 @@
   opacity: 0.6;
 }
 
+/* Invisible resize handles — 8 directions, no grip icon on hover */
 .react-resizable-handle {
-  opacity: 0.7;
+  opacity: 0 !important;
+  background-image: none !important;
+  padding: 0 !important;
+  transform: none !important;
+  z-index: 20;
 }
 
 .react-resizable-handle:hover {
-  opacity: 1;
-}
-
-.react-resizable-handle-se {
-  width: 18px;
-  height: 18px;
+  opacity: 0 !important;
 }
 
 .react-resizable-handle::after {
-  border-right: 2px solid var(--handle) !important;
-  border-bottom: 2px solid var(--handle) !important;
-  right: 5px !important;
-  bottom: 5px !important;
-  width: 8px !important;
-  height: 8px !important;
+  display: none !important;
+}
+
+.react-resizable-handle-w {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  height: auto !important;
+  margin-top: 0 !important;
+  cursor: ew-resize;
+}
+
+.react-resizable-handle-e {
+  right: 0;
+  left: auto;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  height: auto !important;
+  margin-top: 0 !important;
+  cursor: ew-resize;
+}
+
+.react-resizable-handle-n {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  width: auto !important;
+  margin-left: 0 !important;
+  cursor: ns-resize;
+}
+
+.react-resizable-handle-s {
+  bottom: 0;
+  top: auto;
+  left: 0;
+  right: 0;
+  height: 10px;
+  width: auto !important;
+  margin-left: 0 !important;
+  cursor: ns-resize;
+}
+
+.react-resizable-handle-se,
+.react-resizable-handle-sw,
+.react-resizable-handle-ne,
+.react-resizable-handle-nw {
+  width: 12px;
+  height: 12px;
+}
+
+.react-resizable-handle-se {
+  cursor: se-resize;
+}
+
+.react-resizable-handle-sw {
+  cursor: sw-resize;
+}
+
+.react-resizable-handle-ne {
+  cursor: ne-resize;
+}
+
+.react-resizable-handle-nw {
+  cursor: nw-resize;
 }
 
 /* ── Sirius I theme overrides ── */
@@ -626,24 +687,4 @@
   opacity: 0 !important;
   background: transparent !important;
   border: none !important;
-}
-
-[data-theme='sirius-i'] .react-resizable-handle {
-  opacity: 0.15;
-}
-
-[data-theme='sirius-i'] .react-resizable-handle:hover {
-  opacity: 0.5;
-}
-
-[data-theme='sirius-i'] .react-resizable-handle-se {
-  width: 10px;
-  height: 10px;
-}
-
-[data-theme='sirius-i'] .react-resizable-handle::after {
-  width: 5px !important;
-  height: 5px !important;
-  right: 3px !important;
-  bottom: 3px !important;
 }
