@@ -1,5 +1,7 @@
 # Sirius I — Widget Tasarım Rehberi
 
+> Public guide: [WIDGET-GUIDE.md](./WIDGET-GUIDE.md) · This file is the detailed Sirius I content spec.
+
 Widget **içerik** kuralları. Kabuk, tema değişkenleri ve grid: [`Sirius-Terminal-Theme.md`](./Sirius-Terminal-Theme.md).
 
 **Hedef:** Tüm widget’lar aynı kabukta, veri ön planda, minimum UI gürültüsü. Sirius I birincil referans; Dark/Light aynı class’ları kullanır, sadece renk değişkenleri farklıdır.

@@ -1,73 +1,55 @@
-# React + TypeScript + Vite
+# PargalıIbrahim Canvas
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Raw trading terminal shell — draggable widget grid, themes, and layout persistence. No live data, no exchange integration. Use it as a starting point for your own research, analytics, charting, table dashboards, trade UI, or bot front-end.
 
-Currently, two official plugins are available:
+## What you get
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Widget grid** — drag, resize (8 directions), overlap/stack with z-index
+- **6 placeholder widgets** — chart, order book, positions, watchlist, trades, ticker
+- **3 themes** — Dark, Light, Sirius I (default)
+- **Layout persistence** — workspace saved in `localStorage` (lg breakpoint)
+- **Responsive** — lg / md / sm breakpoints; md/sm auto-stack from lg order
 
-## React Compiler
+Stack: Vite, React 19, TypeScript, `react-grid-layout` v2.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Quick start
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone git@github.com:0xanrelins/Pargali-ibrahim.git
+cd Pargali-ibrahim
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open `http://localhost:5173`. Pick widgets and theme from the header dropdowns.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Customize
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+| Task | Guide |
+|------|-------|
+| Add or change widget content | [docs/WIDGET-GUIDE.md](docs/WIDGET-GUIDE.md) |
+| Add or change a theme | [docs/THEME-GUIDE.md](docs/THEME-GUIDE.md) |
+| AI / agent context | [AGENTS.md](AGENTS.md) |
+
+Typical workflow:
+
+1. Wire real data (WebSocket, REST) into `PanelContent.tsx` per widget `kind`
+2. Add widgets in `src/panels.ts` and new `case` branches in `PanelContent.tsx`
+3. Adjust colors in `src/index.css`; shell overrides in `src/App.css`
+4. Rebrand header logo/text in `src/App.tsx` and `public/`
+
+## Key files
+
+| File | Role |
+|------|------|
+| `src/App.tsx` | Shell, grid, header |
+| `src/panels.ts` | Widget catalog, min sizes, default layout |
+| `src/PanelContent.tsx` | Widget body (replace placeholders with your data) |
+| `src/layoutStorage.ts` | Workspace persistence |
+| `src/themeStorage.ts` | Theme IDs + localStorage |
+| `src/index.css` | Theme CSS variables |
+| `src/App.css` | Shared component styles |
+
+## License
+
+MIT — see [LICENSE](LICENSE). Personal and commercial use allowed; no warranty.

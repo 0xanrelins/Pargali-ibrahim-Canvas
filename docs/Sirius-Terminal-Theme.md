@@ -1,5 +1,7 @@
 # PargalıIbrahim Canvas — Tema & Kabuk Rehberi
 
+> Public guide: [THEME-GUIDE.md](./THEME-GUIDE.md) · This file is the detailed variable reference.
+
 PargalıIbrahim Canvas’ın görsel dili ve kabuk kuralları. Tüm renkler CSS değişkenleriyle yönetilir; bileşenler ortak class’ları paylaşır.
 
 **Kaynak dosyalar**

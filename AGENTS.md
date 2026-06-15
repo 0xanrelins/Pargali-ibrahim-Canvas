@@ -1,92 +1,98 @@
-# PargalıIbrahim Canvas — Agent Context
+# PargalıIbrahim Canvas — Agent Guide
+
+Context for AI agents helping users customize this repository.
+
+## What this project is
+
+A **raw trading terminal UI shell** — not a finished product. Users clone it to build personal interfaces for:
+
+- Market data research and analytics
+- Charting and dashboards
+- Trade execution UI
+- Bot monitoring and control panels
+
+**Included:** draggable/resizable widget grid, layout persistence, 3 themes, 6 placeholder widgets.  
+**Not included:** live feeds, exchange APIs, auth, backend.
+
+Stack: Vite, React 19, TypeScript, `react-grid-layout` v2.
+
+## Architecture (read this first)
+
+```
+App.tsx          → header, theme/widget dropdowns, grid shell
+panels.ts        → widget catalog (id, title, kind, minW/minH)
+PanelContent.tsx → widget bodies (swap placeholders for real data)
+layoutStorage.ts → localStorage workspace (activePanels + lg layout)
+themeStorage.ts  → theme id + localStorage
+index.css        → CSS variables per theme
+App.css          → shared shell + widget classes + sirius-i overrides
+```
+
+Grid: 36/24/12 columns (lg/md/sm), `rowHeight` 11px, overlap allowed, z-index on last interaction. Only **lg** layout is persisted.
+
+## Common user tasks
+
+| User goal | Where to work | Doc |
+|-----------|---------------|-----|
+| Add a widget | `panels.ts`, `PanelContent.tsx`, maybe `App.css` | [docs/WIDGET-GUIDE.md](docs/WIDGET-GUIDE.md) |
+| Wire API/WebSocket | New hooks/services + `PanelContent` cases | [docs/WIDGET-GUIDE.md](docs/WIDGET-GUIDE.md) |
+| Add a theme | `index.css`, `themeStorage.ts` | [docs/THEME-GUIDE.md](docs/THEME-GUIDE.md) |
+| Rebrand | `App.tsx`, `public/`, `index.html` | — |
+| Change default layout | `DEFAULT_ACTIVE_PANELS` in `panels.ts` | — |
+
+## Agent conventions
+
+1. **Minimize scope** — match existing patterns; no unrelated refactors
+2. **No hardcoded colors in widgets** — CSS variables (`--text`, `--bid`, …) and semantic classes
+3. **Shell vs body** — never add widget-specific chrome in `App.tsx`; content stays in `PanelContent.tsx`
+4. **Exhaustive switches** — `PanelKind` cases use `never` in default branch
+5. **Imports at top of file** — no inline imports
+6. **`minW`/`minH` in `panels.ts`** = minimum and default open size
+7. **Do not start dev servers** unless the user asks — they run `npm run dev` (port 5173)
+8. **Do not commit** unless the user explicitly asks
+
+## Theme IDs
+
+| ID | Label |
+|----|-------|
+| `dark` | Dark |
+| `light` | Light |
+| `sirius-i` | Sirius I (default) |
+
+## Placeholder widgets
+
+| id | kind | Purpose |
+|----|------|---------|
+| chart | chart | Price / candlestick area |
+| orderbook | orderbook | Depth table |
+| positions | positions | Open positions |
+| watchlist | watchlist | Symbol list |
+| trades | trades | Recent trades feed |
+| ticker | ticker | Market stats cards |
+
+## Persistence keys (localStorage)
+
+| Key | Content |
+|-----|---------|
+| `sirius-terminal-workspace` | `{ activePanels, layout, gridVersion }` |
+| `sirius-terminal-theme` | Theme id string |
+
+## Run & build
+
+```bash
+npm install
+npm run dev      # development
+npm run build    # production build
+```
+
+## Extended docs
+
+- [README.md](README.md) — project overview, quick start
+- [docs/WIDGET-GUIDE.md](docs/WIDGET-GUIDE.md) — add/customize widgets
+- [docs/THEME-GUIDE.md](docs/THEME-GUIDE.md) — add/customize themes
+- [docs/SIRIUS-I-WIDGET-GUIDE.md](docs/SIRIUS-I-WIDGET-GUIDE.md) — detailed Sirius I widget content spec
+- [docs/Sirius-Terminal-Theme.md](docs/Sirius-Terminal-Theme.md) — detailed theme variable reference
 
 ## Version baseline
 
-**Default project reference: `v0.1.0`** (commit `5966bf3`)
-
-Sirius I UI baseline — grid, themes, custom dropdowns, widget picker, branding. Roll back with:
-
-```bash
-git checkout v0.1.0
-# or: git reset --hard v0.1.0
-```
-
-Tag new milestones as `v0.2.0`, `v0.3.0`, etc.
-
-## Agent maintenance (required)
-
-**Her git commit'te bu dosyayı güncelle** — proje journey'si burada yaşar.
-
-1. **Journey** bölümüne yeni satır ekle: tarih, commit hash (ve tag varsa), 1–3 madde ne değişti
-2. **Where we are** — önemli milestone olduysa güncelle
-3. **Where we're going** — öncelikler değiştiyse güncelle
-
-Kısa, factual, gelecekteki agent tek okumada anlasın.
-
-## Journey
-
-| Date | Ref | Summary |
-|------|-----|---------|
-| 2026-06-14 | `v0.1.0` / `5966bf3` | İlk baseline: draggable grid, layout persistence, Sirius I theme, custom theme + widget dropdowns, logo/favicon, header branding |
-| 2026-06-14 | `9023631` | `AGENTS.md`: LLM context, `v0.1.0` baseline notu, journey kuralı (her commit'te güncelle) |
-| 2026-06-14 | `9f47cd1` | Responsive bootstrap: lg-only layout save, md/sm auto-stack, per-widget minW/minH |
-| 2026-06-14 | `42eec8c` | 8-direction invisible resize handles; edge handle transform fix |
-| 2026-06-14 | `d293bf1` | Allow overlap + z-index stack; 8-handle edge fix with overlap |
-| 2026-06-14 | `621716d` | 36-col grid; toggle layout fix; min default size; scroll shell; `docs/Sirius-Terminal-Theme.md` |
-| 2026-06-14 | `34fc32c` | Finer 36-col grid, layout toggle fix, theme docs |
-| 2026-06-14 | `af4d22f` | Persist on drag/resize stop; `gridVersion` fixes refresh reset; `lgLayoutEqual` mount guard |
-| 2026-06-14 | `af20477` | `docs/Sirius-Terminal-Theme.md`: widget min boyut tablosu (grid + yaklaşık px) |
-| 2026-06-14 | — | Proje adı **PargalıIbrahim Canvas**; Ibrahim logo/favicon; header **PargalıIbrahim** |
-
-## Goal
-
-Build a **modular trading terminal**: draggable/resizable widget grid, persistent layout, live market data (future).
-
-## Where we are
-
-- Vite + React 19 + TypeScript + `react-grid-layout` v2
-- **Responsive bootstrap:** 3 breakpoints (lg/md/sm, 36/24/12 cols); `rowHeight` 11px; only **lg** layout persisted; md/sm auto-stacked from lg order
-- **Per-widget minW/minH** in `panels.ts`; default open size = min (ideal size)
-- 6 widget types — placeholder content (`PanelContent.tsx`); tasarım rehberi: `docs/SIRIUS-I-WIDGET-GUIDE.md`
-- 3 themes: Dark, Light, **Sirius I** (`sirius-i`) — **default for new users** (`loadTheme` → `sirius-i`, `index.html` `data-theme`)
-- Header: **PargalıIbrahim** branding, Ibrahim logo/favicon (Sirius seti `sirius-*.png` yedek), theme + widget dropdowns
-- **8-direction resize:** global invisible handles (s/n/e/w + corners)
-- **Allow overlap:** panels can stack; last dragged/resized on top (z-index)
-- Layout key: `sirius-terminal-workspace` (stores `{ activePanels, layout, gridVersion }`); persist on **drag/resize stop**; `onLayoutChange` sync-only
-
-## Where we're going
-
-1. Real panel content — charts, order book, WebSocket/API
-2. GitHub remote + push
-
-## Key files
-
-| File | Role |
-|------|------|
-| `src/App.tsx` | Shell, grid, header |
-| `src/panels.ts` | Widget catalog |
-| `src/layoutStorage.ts` | Workspace persistence |
-| `src/themeStorage.ts` | Theme IDs + localStorage |
-| `src/index.css` | Theme CSS variables |
-| `src/App.css` | Components + Sirius I overrides |
-| `src/ThemeSelect.tsx` | Single-select dropdown |
-| `src/WidgetSelect.tsx` | Multi-select dropdown |
-| `vite.config.ts` | `process.env` defines (required for drag) |
-| `docs/Sirius-Terminal-Theme.md` | Tema + kabuk rehberi |
-| `docs/SIRIUS-I-WIDGET-GUIDE.md` | Sirius I widget içerik rehberi |
-
-## Run
-
-```bash
-npm run dev
-```
-
-Default port 5173. User runs dev server — do not start extra servers.
-
-## Conventions
-
-- **Her commit → `AGENTS.md` Journey güncelle** (yukarıdaki kural)
-- CSS variables + shared classes; don't hardcode colors per panel
-- Minimize scope; match existing patterns
-- Internal theme id: `sirius-i`, label: `Sirius I`
-- No commits unless user asks
+Tag `v0.1.0` (`5966bf3`) — Sirius I UI baseline (grid, themes, dropdowns). Roll back: `git checkout v0.1.0`.
