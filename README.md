@@ -21,8 +21,8 @@ Stack: Vite, React 19, TypeScript, `react-grid-layout` v2.
 ## Quick start
 
 ```bash
-git clone git@github.com:0xanrelins/Pargali-ibrahim.git
-cd Pargali-ibrahim
+git clone https://github.com/0xanrelins/Pargali-ibrahim-Canvas.git
+cd Pargali-ibrahim-Canvas
 npm install
 npm run dev
 ```
