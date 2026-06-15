@@ -2,6 +2,12 @@
 
 Raw trading terminal shell — draggable widget grid, themes, and layout persistence. No live data, no exchange integration. Use it as a starting point for your own research, analytics, charting, table dashboards, trade UI, or bot front-end.
 
+## Example
+
+Sirius I theme, all 6 widgets open — placeholder data, ready to replace with your feeds:
+
+![PargalıIbrahim Canvas — Sirius I, 6 widgets](docs/example-dashboard.png)
+
 ## What you get
 
 - **Widget grid** — drag, resize (8 directions), overlap/stack with z-index
