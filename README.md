@@ -6,7 +6,7 @@ Raw trading terminal shell — draggable widget grid, themes, and layout persist
 
 Sirius I theme, all 6 widgets open — placeholder data, ready to replace with your feeds:
 
-![PargalıIbrahim Canvas — Sirius I, 6 widgets](docs/example-dashboard.png)
+![PargalıIbrahim Canvas — Sirius I, 6 widgets](docs/terminal-example.png)
 
 ## What you get
 

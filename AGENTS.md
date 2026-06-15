@@ -16,7 +16,7 @@ A **raw trading terminal UI shell** — not a finished product. Users clone it t
 
 Stack: Vite, React 19, TypeScript, `react-grid-layout` v2.
 
-Screenshot: [docs/example-dashboard.png](docs/example-dashboard.png)
+Screenshot: [docs/terminal-example.png](docs/terminal-example.png)
 
 ## Architecture (read this first)
 
