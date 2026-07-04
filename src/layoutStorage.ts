@@ -2,12 +2,15 @@ import type { Layout, LayoutItem, ResponsiveLayouts } from 'react-grid-layout'
 import { BREAKPOINT_KEYS, COLS, type BreakpointKey } from './breakpoints'
 import {
   DEFAULT_ACTIVE_PANELS,
-  PANEL_CATALOG,
   createLayoutItem,
-  getPanelById,
+  createPanelInstance,
+  getPanelTemplate,
+  isPanelInstanceId,
+  resolvePanelInstance,
 } from './panels'
 
-export const WORKSPACE_STORAGE_KEY = 'sirius-terminal-workspace'
+export const WORKSPACE_STORAGE_KEY = 'pargali-canvas-workspace'
+const LEGACY_WORKSPACE_KEYS = ['sirius-terminal-workspace'] as const
 const LEGACY_LAYOUT_KEY = 'sirius-terminal-layout'
 const LEGACY_LG_COLS = 12
 const GRID_SCALE = COLS.lg / LEGACY_LG_COLS
@@ -26,7 +29,7 @@ type StoredWorkspace = {
   gridVersion?: number
 }
 
-const CURRENT_GRID_VERSION = 2
+const CURRENT_GRID_VERSION = 3
 
 function emptyLayouts(): ResponsiveLayouts {
   return Object.fromEntries(
@@ -73,7 +76,7 @@ function prepareStoredLayout(
 }
 
 function attachCatalogConstraints(item: LayoutItem): LayoutItem {
-  const panel = getPanelById(item.i)
+  const panel = resolvePanelInstance(item.i)
   if (!panel) return item
 
   const cols = COLS.lg
@@ -99,9 +102,9 @@ function lgLayoutForPanels(activePanels: string[], lgLayout: Layout): Layout {
     const savedItem = lgLayout.find((entry) => entry.i === id)
     if (savedItem) return attachCatalogConstraints(savedItem)
 
-    const panel = getPanelById(id)
+    const panel = resolvePanelInstance(id)
     if (!panel) return { i: id, x: 0, y: 0, ...FALLBACK_GRID }
-    return { i: panel.id, ...panel.grid, minW: Math.min(panel.grid.minW ?? 1, cols) }
+    return { i: id, ...panel.grid, minW: Math.min(panel.grid.minW ?? 1, cols) }
   })
 }
 
@@ -124,7 +127,7 @@ function buildStackedLayout(
   let y = 0
   return ordered.map((id) => {
     const lgItem = lgLayout.find((item) => item.i === id)
-    const panel = getPanelById(id)
+    const panel = resolvePanelInstance(id)
     const h = lgItem?.h ?? panel?.grid.h ?? FALLBACK_GRID.h
     const item: LayoutItem = {
       i: id,
@@ -142,8 +145,7 @@ function buildStackedLayout(
 
 /** Toggle path — preserve lg geometry; only add/remove items, refresh md/sm. */
 function patchWorkspace(activePanels: string[], lgLayout: Layout): WorkspaceState {
-  const catalogIds = new Set(PANEL_CATALOG.map((panel) => panel.id))
-  const panels = activePanels.filter((id) => catalogIds.has(id))
+  const panels = activePanels.filter((id) => isPanelInstanceId(id))
 
   if (panels.length === 0) {
     return { activePanels: [], layouts: emptyLayouts() }
@@ -163,8 +165,8 @@ function patchWorkspace(activePanels: string[], lgLayout: Layout): WorkspaceStat
 function buildDefaultWorkspace(): WorkspaceState {
   const activePanels = [...DEFAULT_ACTIVE_PANELS]
   const catalogLayout = activePanels.map((id) => {
-    const panel = getPanelById(id)
-    return panel ? { i: panel.id, ...panel.grid } : { i: id, x: 0, y: 0, ...FALLBACK_GRID }
+    const panel = resolvePanelInstance(id)
+    return panel ? { i: id, ...panel.grid } : { i: id, x: 0, y: 0, ...FALLBACK_GRID }
   })
   return patchWorkspace(activePanels, catalogLayout)
 }
@@ -210,28 +212,60 @@ function loadStoredWorkspace(
   return state
 }
 
+function readStoredWorkspaceRaw(): { raw: string; source: 'current' | 'legacy-workspace' } | null {
+  const current = localStorage.getItem(WORKSPACE_STORAGE_KEY)
+  if (current) return { raw: current, source: 'current' }
+
+  for (const legacyKey of LEGACY_WORKSPACE_KEYS) {
+    const legacy = localStorage.getItem(legacyKey)
+    if (legacy) {
+      localStorage.removeItem(legacyKey)
+      return { raw: legacy, source: 'legacy-workspace' }
+    }
+  }
+
+  return null
+}
+
+function parseStoredWorkspace(raw: string): WorkspaceState | null {
+  const data = JSON.parse(raw) as Partial<
+    StoredWorkspace & WorkspaceState & { layout?: LayoutItem[] }
+  >
+
+  if (!Array.isArray(data.activePanels)) return null
+
+  if (Array.isArray(data.layout)) {
+    return loadStoredWorkspace(data.activePanels, data.layout, data.gridVersion)
+  }
+  if (data.layouts?.lg) {
+    return loadStoredWorkspace(data.activePanels, data.layouts.lg, data.gridVersion)
+  }
+
+  return null
+}
+
 export function loadWorkspace(): WorkspaceState {
   try {
-    const raw = localStorage.getItem(WORKSPACE_STORAGE_KEY)
-    if (raw) {
-      const data = JSON.parse(raw) as Partial<
-        StoredWorkspace & WorkspaceState & { layout?: LayoutItem[] }
-      >
-
-      if (Array.isArray(data.activePanels)) {
-        if (Array.isArray(data.layout)) {
-          return loadStoredWorkspace(data.activePanels, data.layout, data.gridVersion)
-        }
-        if (data.layouts?.lg) {
-          return loadStoredWorkspace(data.activePanels, data.layouts.lg, data.gridVersion)
-        }
+    const stored = readStoredWorkspaceRaw()
+    if (stored) {
+      const state = parseStoredWorkspace(stored.raw)
+      if (state) {
+        if (stored.source === 'legacy-workspace') saveWorkspace(state)
+        return state
       }
     }
   } catch {
     // fall through
   }
 
-  return loadLegacyWorkspace() ?? buildDefaultWorkspace()
+  const legacy = loadLegacyWorkspace()
+  if (legacy) {
+    localStorage.removeItem(LEGACY_LAYOUT_KEY)
+    saveWorkspace(legacy)
+    return legacy
+  }
+
+  return buildDefaultWorkspace()
 }
 
 export function saveWorkspace(state: WorkspaceState) {
@@ -258,23 +292,23 @@ export function lgLayoutEqual(a: Layout = [], b: Layout = []): boolean {
   })
 }
 
-function appendToLg(layout: Layout, panelId: string): Layout {
-  const panel = getPanelById(panelId)
-  if (!panel) return layout
+function appendToLg(layout: Layout, instanceId: string, templateId: string): Layout {
+  const template = getPanelTemplate(templateId)
+  if (!template) return layout
 
   const bottom = layout.reduce((max, item) => Math.max(max, item.y + item.h), 0)
-  return [...layout, createLayoutItem(panel, bottom)]
+  return [...layout, createLayoutItem(template, instanceId, bottom)]
 }
 
 export function appendPanel(
   state: WorkspaceState,
-  panelId: string,
+  templateId: string,
 ): WorkspaceState | null {
-  if (state.activePanels.includes(panelId)) return null
-  if (!getPanelById(panelId)) return null
+  const instance = createPanelInstance(templateId)
+  if (!instance) return null
 
-  const lg = appendToLg(state.layouts.lg ?? [], panelId)
-  return patchWorkspace([...state.activePanels, panelId], lg)
+  const lg = appendToLg(state.layouts.lg ?? [], instance.id, templateId)
+  return patchWorkspace([...state.activePanels, instance.id], lg)
 }
 
 export function removePanel(

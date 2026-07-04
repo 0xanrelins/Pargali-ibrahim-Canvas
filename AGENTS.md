@@ -11,7 +11,7 @@ A **raw trading terminal UI shell** — not a finished product. Users clone it t
 - Trade execution UI
 - Bot monitoring and control panels
 
-**Included:** draggable/resizable widget grid, layout persistence, 5 shadcn color themes, shadcn/ui components, 6 placeholder widgets.
+**Included:** draggable/resizable widget grid, layout persistence, 5 shadcn color themes, shadcn/ui components, 1 data table widget (more widgets added incrementally).
 **Not included:** live feeds, exchange APIs, auth, backend.
 
 Stack: Vite, React 19, TypeScript, Tailwind v4, shadcn/ui (Radix Mira), `react-grid-layout` v2.
@@ -23,7 +23,7 @@ Screenshot: [docs/terminal-example.png](docs/terminal-example.png)
 ```
 App.tsx              → header, theme/widget dropdowns, grid shell (shadcn Card panels)
 panels.ts            → widget catalog (id, title, kind, minW/minH)
-PanelContent.tsx     → widget bodies (shadcn Table, Card, Item, Badge)
+PanelContent.tsx     → widget bodies (shadcn Table, Card, …)
 layoutStorage.ts     → localStorage workspace (activePanels + lg layout)
 themeStorage.ts      → theme id + localStorage
 index.css            → shadcn CSS variables per theme
@@ -57,8 +57,46 @@ Grid: 36/24/12 columns (lg/md/sm), `rowHeight` 11px, overlap allowed, z-index on
 7. **Do not start dev servers** unless the user asks — they run `npm run dev` (port 5173)
 8. **Do not commit** unless the user explicitly asks
 9. **Read `.agents/skills/shadcn/SKILL.md`** when working with shadcn components
+10. **shadcn first** — before building UI, check if shadcn has the component or block; add via CLI, compose — do not hand-roll primitives
 
-## Theme IDs
+## shadcn-first workflow
+
+Before any new UI work:
+
+1. Read `.agents/skills/shadcn/SKILL.md`
+2. Search: `npx shadcn@latest search @shadcn -q "<name>"`
+3. Docs: `npx shadcn@latest docs <component>`
+4. Add: `npx shadcn@latest add <component>`
+5. Compose in app code — only build custom **wrappers** (e.g. `ThemeSelect`), not custom buttons/tables/dialogs
+
+## UI inventory
+
+### shadcn installed + in use
+
+| Component | Used in |
+|-----------|---------|
+| `button` | `App.tsx`, header controls |
+| `card` | `App.tsx` (panel shell) |
+| `tabs` | `NotesPanel.tsx` |
+| `textarea` | `NotesPanel.tsx` |
+| `chart` | `ChartPanel.tsx` |
+| `table` | `PanelContent.tsx` |
+| `textarea` | `PanelContent.tsx` |
+| `badge` | installed — KPI / stats |
+| `dropdown-menu` | `ThemeSelect`, `WidgetSelect` |
+| `dialog` | `DataSourceDialog` |
+| `skeleton` | installed — use for loading states |
+
+### Intentionally custom (not shadcn)
+
+| Area | Why |
+|------|-----|
+| `react-grid-layout` + `App.css` | Drag/resize grid — no shadcn equivalent |
+| `layoutStorage.ts`, `themeStorage.ts` | Persistence logic |
+| `ThemeSelect`, `WidgetSelect`, `DatasetSelect`, `DataSourceDialog` | Thin app wrappers composing shadcn |
+
+Add components only when needed (e.g. `skeleton`, `chart`, `badge` for KPI cards). Remove unused installs to keep the tree clean.
+
 
 | ID | Label |
 |----|-------|
@@ -68,23 +106,24 @@ Grid: 36/24/12 columns (lg/md/sm), `rowHeight` 11px, overlap allowed, z-index on
 | `taupe` | Taupe |
 | `olive` | Olive |
 
-## Placeholder widgets
+## Widgets
 
 | id | kind | Purpose |
 |----|------|---------|
-| chart | chart | Price / candlestick area |
-| orderbook | orderbook | Depth table |
-| positions | positions | Open positions |
-| watchlist | watchlist | Symbol list |
-| trades | trades | Recent trades feed |
-| ticker | ticker | Market stats cards |
+| notes | notes | Markdown editor + preview (localStorage) |
+| dashboard | dashboard | KPI row, chart, and symbol table in one panel |
+| reports | reports | Saved report library, preview, and run history (mock) |
+| chart | chart | Line chart (Recharts) |
+| kpi-card | kpi-card | Generic metric — name, value, timestamp |
+| data-table | data-table | Parquet / query result preview table |
 
 ## Persistence keys (localStorage)
 
 | Key | Content |
 |-----|---------|
-| `sirius-terminal-workspace` | `{ activePanels, layout, gridVersion }` |
-| `sirius-terminal-theme` | Theme id string |
+| `pargali-canvas-workspace` | `{ activePanels, layout, gridVersion }` |
+| `pargali-canvas-theme` | Theme id string |
+| `pargali-canvas-notes` | Notes workspace (files, contents, active tab) |
 
 ## Run & build
 

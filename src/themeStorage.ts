@@ -12,14 +12,31 @@ export const THEME_LABELS: Record<Theme, string> = {
   olive: 'Olive',
 }
 
-const THEME_KEY = 'sirius-terminal-theme'
+export const THEME_STORAGE_KEY = 'pargali-canvas-theme'
 
-const LEGACY_THEMES = new Set([
+const LEGACY_THEME_KEYS = ['sirius-terminal-theme'] as const
+
+const LEGACY_THEME_IDS = new Set([
   'bloomberg',
   'dark',
   'light',
   'sirius-i',
 ])
+
+function readStoredTheme(): { value: string; migrated: boolean } | null {
+  const current = localStorage.getItem(THEME_STORAGE_KEY)
+  if (current) return { value: current, migrated: false }
+
+  for (const legacyKey of LEGACY_THEME_KEYS) {
+    const legacy = localStorage.getItem(legacyKey)
+    if (legacy) {
+      localStorage.removeItem(legacyKey)
+      return { value: legacy, migrated: true }
+    }
+  }
+
+  return null
+}
 
 export function applyTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme
@@ -28,12 +45,18 @@ export function applyTheme(theme: Theme) {
 
 export function loadTheme(): Theme {
   try {
-    const saved = localStorage.getItem(THEME_KEY)
-    if (saved && LEGACY_THEMES.has(saved)) {
+    const stored = readStoredTheme()
+    if (!stored) return DEFAULT_THEME
+
+    const { value: saved, migrated } = stored
+    if (LEGACY_THEME_IDS.has(saved)) {
       saveTheme(DEFAULT_THEME)
       return DEFAULT_THEME
     }
-    if (saved && THEMES.includes(saved as Theme)) return saved as Theme
+    if (THEMES.includes(saved as Theme)) {
+      if (migrated) saveTheme(saved as Theme)
+      return saved as Theme
+    }
   } catch {
     // ignore
   }
@@ -41,5 +64,5 @@ export function loadTheme(): Theme {
 }
 
 export function saveTheme(theme: Theme) {
-  localStorage.setItem(THEME_KEY, theme)
+  localStorage.setItem(THEME_STORAGE_KEY, theme)
 }

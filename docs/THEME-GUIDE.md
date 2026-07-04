@@ -31,7 +31,7 @@ Theme is applied via `document.documentElement.dataset.theme` and `.dark` class.
 | `taupe` | Taupe | `blTaKtCok` |
 | `olive` | Olive | `b6t6ENHec` |
 
-Legacy localStorage values (`sirius-i`, `dark`, `light`, `bloomberg`) migrate to `neutral`.
+Legacy localStorage keys (`sirius-terminal-theme`, `sirius-terminal-workspace`, `sirius-terminal-layout`) migrate automatically on first load. Legacy theme ids (`sirius-i`, `dark`, `light`, `bloomberg`) reset to `neutral`.
 
 ### Core variables
 
@@ -98,7 +98,7 @@ Do not change spacing, font sizes, radius, or layout per theme. Themes change co
 | Breakpoints | lg 36 cols / md 24 / sm 12 |
 | Row height | 11px |
 | Overlap | Enabled — last dragged panel on top |
-| Layout storage | `localStorage` key `sirius-terminal-workspace` (lg only) |
+| Layout storage | `localStorage` key `pargali-canvas-workspace` (lg only) |
 | Resize | 8 invisible handles (edges + corners) |
 
 ---

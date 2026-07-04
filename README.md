@@ -4,14 +4,14 @@ Raw trading terminal shell — draggable widget grid, shadcn/ui components, colo
 
 ## Example
 
-Default theme, all 6 widgets open — placeholder data, ready to replace with your feeds:
+Default theme with the Data Table widget — placeholder preview rows, ready to connect to Parquet or live feeds:
 
-![PargalıIbrahim Canvas — 6 widgets](docs/terminal-example.png)
+![PargalıIbrahim Canvas](docs/terminal-example.png)
 
 ## What you get
 
 - **Widget grid** — drag, resize (8 directions), overlap/stack with z-index
-- **6 placeholder widgets** — chart, order book, positions, watchlist, trades, ticker
+- **Data Table widget** — shadcn table for Parquet/query preview (more widgets added incrementally)
 - **5 color themes** — Neutral, Stone, Mauve, Taupe, Olive (shadcn presets)
 - **shadcn/ui shell** — Card panels, DropdownMenu, Table, Dialog
 - **Layout persistence** — workspace saved in `localStorage` (lg breakpoint)

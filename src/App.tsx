@@ -16,11 +16,11 @@ import {
   Card,
   CardAction,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
 import { PanelContent } from './PanelContent'
+import { PanelDataHint } from './PanelDataHint'
 import { BREAKPOINTS, COLS, ROW_HEIGHT, breakpointFromWidth } from './breakpoints'
 import {
   appendPanel,
@@ -30,8 +30,9 @@ import {
   saveWorkspace,
   type WorkspaceState,
 } from './layoutStorage'
-import { PANEL_CATALOG } from './panels'
-import { SettingsDialog } from './SettingsDialog'
+import { panelDisplayTitle, resolvePanelInstance } from './panels'
+import { ParquetDataProvider } from './context/ParquetDataContext'
+import { DataSourceDialog } from './DataSourceDialog'
 import { ThemeSelect } from './ThemeSelect'
 import { WidgetSelect } from './WidgetSelect'
 import { applyTheme, loadTheme, saveTheme, type Theme } from './themeStorage'
@@ -63,8 +64,8 @@ function App() {
   const visiblePanels = useMemo(
     () =>
       workspace.activePanels
-        .map((id) => PANEL_CATALOG.find((panel) => panel.id === id))
-        .filter((panel): panel is (typeof PANEL_CATALOG)[number] => !!panel),
+        .map((id) => resolvePanelInstance(id))
+        .filter((panel): panel is NonNullable<typeof panel> => panel !== null),
     [workspace.activePanels],
   )
 
@@ -136,11 +137,18 @@ function App() {
     [stackOrder],
   )
 
-  const handleTogglePanel = useCallback((panelId: string) => {
+  const handleAddPanel = useCallback((templateId: string) => {
     setWorkspace((prev) => {
-      const next = prev.activePanels.includes(panelId)
-        ? removePanel(prev, panelId)
-        : appendPanel(prev, panelId)
+      const next = appendPanel(prev, templateId)
+      if (!next) return prev
+      saveWorkspace(next)
+      return next
+    })
+  }, [])
+
+  const handleRemovePanel = useCallback((panelId: string) => {
+    setWorkspace((prev) => {
+      const next = removePanel(prev, panelId)
       if (!next) return prev
       saveWorkspace(next)
       return next
@@ -152,6 +160,7 @@ function App() {
   }, [])
 
   return (
+    <ParquetDataProvider>
     <div className="flex h-screen min-h-screen flex-col bg-background text-foreground">
       <header className="flex items-center justify-between gap-4 px-3 py-2">
         <div className="flex items-center gap-2 pl-[5ch]">
@@ -169,11 +178,8 @@ function App() {
 
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ThemeSelect value={theme} onChange={handleThemeChange} />
-          <WidgetSelect
-            activePanelIds={workspace.activePanels}
-            onToggle={handleTogglePanel}
-          />
-          <SettingsDialog theme={theme} />
+          <WidgetSelect panelCount={visiblePanels.length} onAdd={handleAddPanel} />
+          <DataSourceDialog />
         </div>
       </header>
 
@@ -204,8 +210,12 @@ function App() {
               >
                 <CardHeader className="pointer-events-none gap-0 px-2 pb-1 pt-1.5">
                   <div className="pointer-events-auto flex min-w-0 flex-1 items-center justify-between gap-2">
-                    <CardTitle className="text-xs font-semibold">{panel.title}</CardTitle>
-                    <CardDescription className="text-xs">{panel.hint}</CardDescription>
+                    <CardTitle className="truncate text-xs font-semibold">
+                      {panelDisplayTitle(panel, visiblePanels)}
+                    </CardTitle>
+                    {panel.kind !== 'kpi-card' && (
+                      <PanelDataHint panelId={panel.id} kind={panel.kind} fallback={panel.hint} />
+                    )}
                   </div>
                   <CardAction className="pointer-events-auto">
                     <Button
@@ -214,14 +224,14 @@ function App() {
                       size="icon-xs"
                       className="panel-close opacity-0 transition-opacity group-hover/panel:opacity-100"
                       aria-label={`${panel.title} panelini kapat`}
-                      onClick={() => handleTogglePanel(panel.id)}
+                      onClick={() => handleRemovePanel(panel.id)}
                     >
                       <XIcon />
                     </Button>
                   </CardAction>
                 </CardHeader>
                 <CardContent className="panel-body min-h-0 flex-1 overflow-auto px-2 pb-2 pt-0">
-                  <PanelContent kind={panel.kind} />
+                  <PanelContent panelId={panel.id} kind={panel.kind} />
                 </CardContent>
               </Card>
             ))}
@@ -235,6 +245,7 @@ function App() {
         )}
       </main>
     </div>
+    </ParquetDataProvider>
   )
 }
 

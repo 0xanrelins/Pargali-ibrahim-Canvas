@@ -2,7 +2,7 @@
 
 How to add or customize widgets in PargalıIbrahim Canvas. Shell, grid, and themes: [THEME-GUIDE.md](./THEME-GUIDE.md).
 
-**Scope:** Widget **body** only — chart, table, list content. The shell (title bar, drag handle, close, resize) lives in `App.tsx` as a shadcn `Card` and is shared by all widgets.
+**Scope:** Widget **body** only — table, chart, report content. The shell (title bar, drag handle, close, resize) lives in `App.tsx` as a shadcn `Card` and is shared by all widgets.
 
 ---
 
@@ -15,7 +15,7 @@ How to add or customize widgets in PargalıIbrahim Canvas. Shell, grid, and them
 
 ```
 ┌─ CardHeader ─────────────────────────── × ─┐
-│  Chart          BTC/USDT · 1h              │
+│  Data Table     market_ticks.parquet       │
 ├─ CardContent ──────────────────────────────┤
 │  … widget content (PanelContent) …       │
 └──────────────────────────────────────────┘
@@ -25,15 +25,25 @@ Do not add widget-specific shell styles. Put all content inside `CardContent` us
 
 ---
 
+## shadcn-first (before any widget UI)
+
+1. Check shadcn: `npx shadcn@latest search @shadcn -q "<name>"`
+2. Read docs: `npx shadcn@latest docs <component>`
+3. Add if missing: `npx shadcn@latest add <component>`
+4. Compose in `PanelContent.tsx` — no hand-rolled table/button/dialog primitives
+
+See also [AGENTS.md](../AGENTS.md) → **shadcn-first workflow**.
+
+---
+
 ## Add a new widget
 
 ### 1. Register in `src/panels.ts`
 
 ```ts
 export type PanelKind =
-  | 'chart'
-  | 'orderbook'
-  // … existing kinds …
+  | 'data-table'
+  // … add new kinds here …
   | 'mywidget'
 
 export const PANEL_CATALOG: PanelDef[] = [
@@ -73,10 +83,12 @@ Reuse existing patterns first:
 
 | Component | Use for |
 |-----------|---------|
-| `Table` | Tabular data (order book, positions, trades) |
-| `Item` + `Badge` | Symbol lists (watchlist) |
-| `Card` | Stat cards (ticker), chart placeholder |
-| Tailwind utilities | Layout, spacing |
+| `Tabs` + `Textarea` | Markdown notes (edit + preview) |
+| `Chart` | Time series, OHLC (Recharts via shadcn) |
+| `Table` | Tabular data, Parquet preview, query results |
+| `Card` + `Badge` | KPI / stat cards (add `badge` when needed) |
+| `Chart` | Time series (add `chart` when needed) |
+| `Skeleton` | Loading states (add when needed) |
 
 Add shadcn components via CLI when needed:
 
@@ -110,20 +122,19 @@ Typography: Inter (theme default), `text-xs`, `tabular-nums` for numbers.
 
 | Widget | kind | minW × minH | Body pattern |
 |--------|------|-------------|--------------|
-| Chart | `chart` | 12 × 12 | `Card` placeholder |
-| Order Book | `orderbook` | 9 × 9 | `Table` |
-| Positions | `positions` | 6 × 6 | `Table` |
-| Watchlist | `watchlist` | 6 × 6 | `Item` + `Badge` |
-| Recent Trades | `trades` | 6 × 6 | `Table` |
-| Ticker | `ticker` | 3 × 3 | `Card` grid |
+| Notes | `notes` | 8 × 8 | `Tabs` + Edit/Preview toggle + `Textarea` |
+| Chart | `chart` | 9 × 7 | shadcn `Chart` + Recharts `LineChart` |
+| KPI Card | `kpi-card` | 4 × 3 | name + value + timestamp (left stack) |
+| Textarea | `textarea` | 6 × 5 | shadcn `Textarea` (notes / query) |
+| Data Table | `data-table` | 9 × 7 | shadcn `Table` + `TableFooter` |
 
-Placeholder content in `PanelContent.tsx` is meant to be replaced with your API/WebSocket data.
+Add new widgets one at a time via shadcn components. Placeholder content in `PanelContent.tsx` is replaced with real data sources as you wire them up.
 
 ---
 
 ## Wire live data
 
-1. Create hooks or services outside `PanelContent.tsx` (e.g. `src/hooks/useOrderBook.ts`)
+1. Create hooks or services outside `PanelContent.tsx` (e.g. `src/hooks/useDatasetPreview.ts`)
 2. Pass data into `PanelContent` via props from `App.tsx`, or use context
 3. Keep rendering logic in the `case` branch; keep fetch/subscribe logic separate
 
