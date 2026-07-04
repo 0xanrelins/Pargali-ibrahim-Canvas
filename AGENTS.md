@@ -11,23 +11,26 @@ A **raw trading terminal UI shell** — not a finished product. Users clone it t
 - Trade execution UI
 - Bot monitoring and control panels
 
-**Included:** draggable/resizable widget grid, layout persistence, 3 themes, 6 placeholder widgets.  
+**Included:** draggable/resizable widget grid, layout persistence, 5 shadcn color themes, shadcn/ui components, 6 placeholder widgets.
 **Not included:** live feeds, exchange APIs, auth, backend.
 
-Stack: Vite, React 19, TypeScript, `react-grid-layout` v2.
+Stack: Vite, React 19, TypeScript, Tailwind v4, shadcn/ui (Radix Mira), `react-grid-layout` v2.
 
 Screenshot: [docs/terminal-example.png](docs/terminal-example.png)
 
 ## Architecture (read this first)
 
 ```
-App.tsx          → header, theme/widget dropdowns, grid shell
-panels.ts        → widget catalog (id, title, kind, minW/minH)
-PanelContent.tsx → widget bodies (swap placeholders for real data)
-layoutStorage.ts → localStorage workspace (activePanels + lg layout)
-themeStorage.ts  → theme id + localStorage
-index.css        → CSS variables per theme
-App.css          → shared shell + widget classes + sirius-i overrides
+App.tsx              → header, theme/widget dropdowns, grid shell (shadcn Card panels)
+panels.ts            → widget catalog (id, title, kind, minW/minH)
+PanelContent.tsx     → widget bodies (shadcn Table, Card, Item, Badge)
+layoutStorage.ts     → localStorage workspace (activePanels + lg layout)
+themeStorage.ts      → theme id + localStorage
+index.css            → shadcn CSS variables per theme
+App.css              → react-grid-layout resize overrides only
+components.json      → shadcn project config
+src/components/ui/   → shadcn components
+.agents/skills/      → shadcn agent skills
 ```
 
 Grid: 36/24/12 columns (lg/md/sm), `rowHeight` 11px, overlap allowed, z-index on last interaction. Only **lg** layout is persisted.
@@ -36,30 +39,34 @@ Grid: 36/24/12 columns (lg/md/sm), `rowHeight` 11px, overlap allowed, z-index on
 
 | User goal | Where to work | Doc |
 |-----------|---------------|-----|
-| Add a widget | `panels.ts`, `PanelContent.tsx`, maybe `App.css` | [docs/WIDGET-GUIDE.md](docs/WIDGET-GUIDE.md) |
+| Add a widget | `panels.ts`, `PanelContent.tsx` | [docs/WIDGET-GUIDE.md](docs/WIDGET-GUIDE.md) |
 | Wire API/WebSocket | New hooks/services + `PanelContent` cases | [docs/WIDGET-GUIDE.md](docs/WIDGET-GUIDE.md) |
-| Add a theme | `index.css`, `themeStorage.ts` | [docs/THEME-GUIDE.md](docs/THEME-GUIDE.md) |
+| Add a color theme | `index.css`, `themeStorage.ts` | [docs/THEME-GUIDE.md](docs/THEME-GUIDE.md) |
+| Add shadcn component | `npx shadcn@latest add <component>` | [shadcn docs](https://ui.shadcn.com) |
 | Rebrand | `App.tsx`, `public/`, `index.html` | — |
 | Change default layout | `DEFAULT_ACTIVE_PANELS` in `panels.ts` | — |
 
 ## Agent conventions
 
 1. **Minimize scope** — match existing patterns; no unrelated refactors
-2. **No hardcoded colors in widgets** — CSS variables (`--text`, `--bid`, …) and semantic classes
-3. **Shell vs body** — never add widget-specific chrome in `App.tsx`; content stays in `PanelContent.tsx`
+2. **No hardcoded colors in widgets** — shadcn semantic tokens (`text-up`, `text-bid`, `bg-card`, …)
+3. **Shell vs body** — panel chrome in `App.tsx` (Card); content in `PanelContent.tsx`
 4. **Exhaustive switches** — `PanelKind` cases use `never` in default branch
 5. **Imports at top of file** — no inline imports
 6. **`minW`/`minH` in `panels.ts`** = minimum and default open size
 7. **Do not start dev servers** unless the user asks — they run `npm run dev` (port 5173)
 8. **Do not commit** unless the user explicitly asks
+9. **Read `.agents/skills/shadcn/SKILL.md`** when working with shadcn components
 
 ## Theme IDs
 
 | ID | Label |
 |----|-------|
-| `dark` | Dark |
-| `light` | Light |
-| `sirius-i` | Sirius I (default) |
+| `neutral` | Neutral (default) |
+| `stone` | Stone |
+| `mauve` | Mauve |
+| `taupe` | Taupe |
+| `olive` | Olive |
 
 ## Placeholder widgets
 
@@ -92,9 +99,7 @@ npm run build    # production build
 - [README.md](README.md) — project overview, quick start
 - [docs/WIDGET-GUIDE.md](docs/WIDGET-GUIDE.md) — add/customize widgets
 - [docs/THEME-GUIDE.md](docs/THEME-GUIDE.md) — add/customize themes
-- [docs/SIRIUS-I-WIDGET-GUIDE.md](docs/SIRIUS-I-WIDGET-GUIDE.md) — detailed Sirius I widget content spec
-- [docs/Sirius-Terminal-Theme.md](docs/Sirius-Terminal-Theme.md) — detailed theme variable reference
 
 ## Version baseline
 
-Tag `v0.1.0` (`5966bf3`) — Sirius I UI baseline (grid, themes, dropdowns). Roll back: `git checkout v0.1.0`.
+Tag `v0.1.0` (`5966bf3`) — pre-shadcn Sirius I baseline. Roll back: `git checkout v0.1.0`.

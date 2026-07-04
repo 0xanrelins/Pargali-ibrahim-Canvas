@@ -2,7 +2,7 @@
 
 How themes and the terminal shell work in PargalıIbrahim Canvas. Widget content rules: [WIDGET-GUIDE.md](./WIDGET-GUIDE.md).
 
-All colors are CSS variables. Components use shared classes — widget bodies must not copy theme hex values.
+Themes are **color-only palettes** built on [shadcn/ui](https://ui.shadcn.com) CSS variables (OKLCH). Layout, spacing, typography, and component structure stay fixed across themes.
 
 ---
 
@@ -10,88 +10,83 @@ All colors are CSS variables. Components use shared classes — widget bodies mu
 
 | File | Role |
 |------|------|
-| `src/index.css` | Theme variable blocks (`dark`, `light`, `sirius-i`) |
-| `src/App.css` | Shell + widget styles; `[data-theme='sirius-i']` overrides |
-| `src/themeStorage.ts` | Theme IDs, labels, localStorage key |
+| `src/index.css` | shadcn theme token blocks per `[data-theme='…']` |
+| `src/App.css` | `react-grid-layout` resize overrides only |
+| `src/themeStorage.ts` | Theme IDs, labels, localStorage |
 | `src/ThemeSelect.tsx` | Header theme dropdown |
+| `components.json` | shadcn project config |
 | `index.html` | Initial `data-theme` on `<html>` |
 
-Theme is applied via `document.documentElement.dataset.theme`. Default for new users: `sirius-i` (Sirius I).
+Theme is applied via `document.documentElement.dataset.theme` and `.dark` class. Default: `neutral`.
 
 ---
 
 ## Built-in themes
 
-| ID | Label | Character |
-|----|-------|-----------|
-| `dark` | Dark | Classic terminal — blue handle, visible panel borders |
-| `light` | Light | Light background, green/red bid/ask |
-| `sirius-i` | Sirius I | Soft black, minimal borders, sage/dusty-rose bid/ask |
+| ID | Label | shadcn preset |
+|----|-------|---------------|
+| `neutral` | Neutral | `b1D0dv86` |
+| `stone` | Stone | `bKZTOaNk` |
+| `mauve` | Mauve | `b6ZjlcKFk` |
+| `taupe` | Taupe | `blTaKtCok` |
+| `olive` | Olive | `b6t6ENHec` |
 
-Internal id `sirius-i`, display label `Sirius I`. Legacy `bloomberg` in localStorage migrates to `sirius-i`.
+Legacy localStorage values (`sirius-i`, `dark`, `light`, `bloomberg`) migrate to `neutral`.
 
-### Core variables (all themes)
+### Core variables
 
 | Variable | Typical use |
 |----------|-------------|
-| `--bg` | Page background |
-| `--panel-bg` | Panel body |
-| `--panel-border` | Panel frame |
-| `--panel-header-bg` | Title bar (transparent on Sirius I) |
-| `--text` / `--text-dim` / `--text-muted` | Text hierarchy |
+| `--background` / `--foreground` | Page and primary text |
+| `--card` / `--card-foreground` | Panel surfaces |
+| `--popover` | Dropdowns, menus |
+| `--muted` / `--muted-foreground` | Secondary text |
+| `--border` / `--input` / `--ring` | Borders and focus |
 | `--bid`, `--ask`, `--up`, `--down`, `--long`, `--short` | Market semantics |
-| `--handle` | Resize handle color |
-| `--grid-line` | Chart grid (transparent on Sirius I) |
-| `--chart-glow` | Chart area gradient |
+| `--chart-glow` | Chart placeholder gradient |
 
-Full hex tables: `src/index.css`. Sirius I shell tweaks: `src/App.css` → `[data-theme='sirius-i']`.
+Full token blocks: `src/index.css`.
 
 ---
 
 ## Add a new theme
 
-### 1. Define variables in `src/index.css`
+### 1. Get preset colors
+
+Create a preset at [ui.shadcn.com/create](https://ui.shadcn.com/create), then extract the `.dark` block:
+
+```bash
+npx shadcn@latest preset decode <code>
+```
+
+### 2. Add CSS block in `src/index.css`
 
 ```css
 [data-theme='my-theme'] {
-  --bg: #0a0a0a;
-  --text: #ffffff;
-  --bid: #77a898;
-  --ask: #9e8585;
-  /* copy full set from dark or sirius-i and adjust */
+  --background: oklch(...);
+  --foreground: oklch(...);
+  /* copy full token set from an existing theme and adjust colors only */
 }
 ```
 
-Include every variable used in `App.css` — missing vars fall through unpredictably.
+Include market tokens (`--bid`, `--ask`, etc.) and `--chart-glow`.
 
-### 2. Register in `src/themeStorage.ts`
+### 3. Register in `src/themeStorage.ts`
 
 ```ts
-export const THEMES = ['dark', 'light', 'sirius-i', 'my-theme'] as const
+export const THEMES = ['neutral', 'stone', 'mauve', 'taupe', 'olive', 'my-theme'] as const
 
 export const THEME_LABELS: Record<Theme, string> = {
-  dark: 'Dark',
-  light: 'Light',
-  'sirius-i': 'Sirius I',
+  // ...
   'my-theme': 'My Theme',
 }
 ```
 
 `ThemeSelect` picks up `THEMES` automatically.
 
-### 3. Optional shell overrides in `src/App.css`
+### 4. Keep shell fixed
 
-```css
-[data-theme='my-theme'] .panel {
-  /* theme-specific shell tweaks only */
-}
-```
-
-Keep widget bodies theme-agnostic; override shared classes, not per-widget IDs.
-
-### 4. Default theme (optional)
-
-Change the fallback in `loadTheme()` in `themeStorage.ts` and `data-theme` in `index.html`.
+Do not change spacing, font sizes, radius, or layout per theme. Themes change color tokens only.
 
 ---
 
@@ -110,9 +105,7 @@ Change the fallback in `loadTheme()` in `themeStorage.ts` and `data-theme` in `i
 
 ## Design rules
 
-1. **No hardcoded colors in widgets** — use variables and semantic classes (`.bid`, `.up`, …)
-2. **One shell for all widgets** — no per-panel colored title bars
-3. **Sirius I first** — if you ship a custom theme, test tabular data and charts against all three built-ins
-4. **Monospace + tabular nums** — trading data stays aligned
-
-Extended Sirius I reference: [Sirius-Terminal-Theme.md](./Sirius-Terminal-Theme.md).
+1. **No hardcoded colors in widgets** — use shadcn/Tailwind semantic tokens (`text-up`, `text-bid`, `bg-card`, …)
+2. **One shell for all widgets** — shadcn `Card` panel chrome in `App.tsx`
+3. **Color palettes only** — no per-theme layout overrides
+4. **Tabular nums** — trading data stays aligned

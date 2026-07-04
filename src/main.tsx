@@ -1,9 +1,9 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { loadTheme } from './themeStorage'
+import { loadTheme, applyTheme } from './themeStorage'
 
-document.documentElement.dataset.theme = loadTheme()
+applyTheme(loadTheme())
 
 createRoot(document.getElementById('root')!).render(
   <App />,

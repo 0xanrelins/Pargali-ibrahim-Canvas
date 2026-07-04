@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { ChevronDownIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { PANEL_CATALOG } from './panels'
 
 type WidgetSelectProps = {
@@ -7,74 +14,25 @@ type WidgetSelectProps = {
 }
 
 export function WidgetSelect({ activePanelIds, onToggle }: WidgetSelectProps) {
-  const [open, setOpen] = useState(false)
-  const rootRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) return
-
-    const handlePointerDown = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false)
-      }
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false)
-    }
-
-    document.addEventListener('mousedown', handlePointerDown)
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('mousedown', handlePointerDown)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [open])
-
   return (
-    <div className="dropdown dropdown--multi" ref={rootRef}>
-      <button
-        type="button"
-        className="dropdown-trigger"
-        aria-label="Widget seç"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        onClick={() => setOpen((prev) => !prev)}
-      >
-        <span className="dropdown-label">Widgets ({activePanelIds.length})</span>
-        <span className="dropdown-chevron" aria-hidden>
-          ▾
-        </span>
-      </button>
-
-      {open && (
-        <ul
-          className="dropdown-menu"
-          role="listbox"
-          aria-label="Widget seç"
-          aria-multiselectable="true"
-        >
-          {PANEL_CATALOG.map((panel) => {
-            const selected = activePanelIds.includes(panel.id)
-            return (
-              <li key={panel.id} role="presentation">
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={selected}
-                  className={`dropdown-option${selected ? ' is-selected' : ''}`}
-                  onClick={() => onToggle(panel.id)}
-                >
-                  <span className="dropdown-check" aria-hidden>
-                    {selected ? '✓' : ''}
-                  </span>
-                  <span>{panel.title}</span>
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-      )}
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" aria-label="Widget seç">
+          Widgets ({activePanelIds.length})
+          <ChevronDownIcon data-icon="inline-end" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-36">
+        {PANEL_CATALOG.map((panel) => (
+          <DropdownMenuCheckboxItem
+            key={panel.id}
+            checked={activePanelIds.includes(panel.id)}
+            onCheckedChange={() => onToggle(panel.id)}
+          >
+            {panel.title}
+          </DropdownMenuCheckboxItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

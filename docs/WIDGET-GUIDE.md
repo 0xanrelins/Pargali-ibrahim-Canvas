@@ -2,7 +2,7 @@
 
 How to add or customize widgets in PargalıIbrahim Canvas. Shell, grid, and themes: [THEME-GUIDE.md](./THEME-GUIDE.md).
 
-**Scope:** Widget **body** only — chart, table, list content. The shell (title bar, drag handle, close, resize) lives in `App.tsx` and is shared by all widgets.
+**Scope:** Widget **body** only — chart, table, list content. The shell (title bar, drag handle, close, resize) lives in `App.tsx` as a shadcn `Card` and is shared by all widgets.
 
 ---
 
@@ -10,18 +10,18 @@ How to add or customize widgets in PargalıIbrahim Canvas. Shell, grid, and them
 
 | Layer | File | Responsibility |
 |-------|------|----------------|
-| Shell | `src/App.tsx` | Title, hint, × close, drag handle, resize |
+| Shell | `src/App.tsx` | shadcn `Card` — title, hint, close, drag/resize |
 | Body | `src/PanelContent.tsx` | Your data / chart / table |
 
 ```
-┌─ panel-handle ─────────────────────── × ─┐
-│  Chart          BTC/USDT · 1h            │
-├─ panel-body ─────────────────────────────┤
+┌─ CardHeader ─────────────────────────── × ─┐
+│  Chart          BTC/USDT · 1h              │
+├─ CardContent ──────────────────────────────┤
 │  … widget content (PanelContent) …       │
 └──────────────────────────────────────────┘
 ```
 
-Do not add widget-specific shell styles. Put all content inside `panel-body` using shared classes.
+Do not add widget-specific shell styles. Put all content inside `CardContent` using shadcn components.
 
 ---
 
@@ -34,7 +34,7 @@ export type PanelKind =
   | 'chart'
   | 'orderbook'
   // … existing kinds …
-  | 'mywidget'   // add here
+  | 'mywidget'
 
 export const PANEL_CATALOG: PanelDef[] = [
   // …
@@ -49,7 +49,7 @@ export const PANEL_CATALOG: PanelDef[] = [
 ```
 
 - `id` — unique key; used in layout and `WidgetSelect`
-- `minW` × `minH` — minimum size **and** default open size (`createLayoutItem` uses min as w/h)
+- `minW` × `minH` — minimum size **and** default open size
 - lg grid: 36 columns, `rowHeight` 11px → height ≈ `h × 11px`
 
 ### 2. Render in `src/PanelContent.tsx`
@@ -59,7 +59,7 @@ Add a `case` for your `kind`:
 ```tsx
 case 'mywidget':
   return (
-    <div className="panel-content">
+    <div className="h-full min-h-20">
       {/* your markup */}
     </div>
   )
@@ -67,18 +67,24 @@ case 'mywidget':
 
 Use an exhaustive `default` with `never` so new kinds fail at compile time if unhandled.
 
-### 3. Styles in `src/App.css` (only if needed)
+### 3. Use shadcn components
 
 Reuse existing patterns first:
 
-| Class | Use for |
-|-------|---------|
-| `.data-table` | Tabular data (order book, positions, trades) |
-| `.watchlist` | Symbol lists |
-| `.ticker-grid` + `.ticker-stat` | Stat cards |
-| `.panel-content` + `.panel-content--chart` | Chart area |
+| Component | Use for |
+|-----------|---------|
+| `Table` | Tabular data (order book, positions, trades) |
+| `Item` + `Badge` | Symbol lists (watchlist) |
+| `Card` | Stat cards (ticker), chart placeholder |
+| Tailwind utilities | Layout, spacing |
 
-Add a new shared class only when no existing pattern fits. Never hardcode hex colors — use CSS variables (`--text`, `--bid`, `--ask`, etc.).
+Add shadcn components via CLI when needed:
+
+```bash
+npx shadcn@latest add <component>
+```
+
+Never hardcode hex colors — use semantic tokens (`text-up`, `text-bid`, `text-muted-foreground`, …).
 
 ### 4. Widget picker
 
@@ -88,19 +94,15 @@ Add a new shared class only when no existing pattern fits. Never hardcode hex co
 
 ## Semantic colors
 
-| Class / variable | Meaning |
-|------------------|---------|
-| `--text` | Primary data (price, symbol) |
-| `--text-dim` | Labels, table headers |
-| `--text-muted` | Secondary text |
-| `--bid` / `.bid` | Buy side |
-| `--ask` / `.ask` | Sell side |
-| `--up` / `.up` | Positive change |
-| `--down` / `.down` | Negative change |
-| `--long` / `.long` | Long position |
-| `--short` / `.short` | Short position |
+| Token / class | Meaning |
+|---------------|---------|
+| `text-foreground` | Primary data |
+| `text-muted-foreground` | Labels, secondary text |
+| `text-bid` / `text-ask` | Buy / sell side |
+| `text-up` / `text-down` | Positive / negative change |
+| `text-long` / `text-short` | Position side |
 
-Typography: monospace stack from `body`, `0.75rem`, `font-variant-numeric: tabular-nums` for numbers.
+Typography: Inter (theme default), `text-xs`, `tabular-nums` for numbers.
 
 ---
 
@@ -108,12 +110,12 @@ Typography: monospace stack from `body`, `0.75rem`, `font-variant-numeric: tabul
 
 | Widget | kind | minW × minH | Body pattern |
 |--------|------|-------------|--------------|
-| Chart | `chart` | 12 × 12 | `.panel-content--chart` |
-| Order Book | `orderbook` | 9 × 9 | `table.data-table`, `tr.bid` / `tr.ask` |
-| Positions | `positions` | 6 × 6 | `table.data-table` |
-| Watchlist | `watchlist` | 6 × 6 | `ul.watchlist` |
-| Recent Trades | `trades` | 6 × 6 | `table.data-table` |
-| Ticker | `ticker` | 3 × 3 | `.ticker-grid` |
+| Chart | `chart` | 12 × 12 | `Card` placeholder |
+| Order Book | `orderbook` | 9 × 9 | `Table` |
+| Positions | `positions` | 6 × 6 | `Table` |
+| Watchlist | `watchlist` | 6 × 6 | `Item` + `Badge` |
+| Recent Trades | `trades` | 6 × 6 | `Table` |
+| Ticker | `ticker` | 3 × 3 | `Card` grid |
 
 Placeholder content in `PanelContent.tsx` is meant to be replaced with your API/WebSocket data.
 
@@ -125,7 +127,7 @@ Placeholder content in `PanelContent.tsx` is meant to be replaced with your API/
 2. Pass data into `PanelContent` via props from `App.tsx`, or use context
 3. Keep rendering logic in the `case` branch; keep fetch/subscribe logic separate
 
-`panel-body` scrolls overflow. For charts, handle resize inside the widget (canvas `ResizeObserver` or chart library API).
+`CardContent` scrolls overflow. For charts, handle resize inside the widget (canvas `ResizeObserver` or chart library API).
 
 ---
 
@@ -146,7 +148,5 @@ Placeholder content in `PanelContent.tsx` is meant to be replaced with your API/
 - [ ] `PanelKind` union updated in `panels.ts`
 - [ ] Entry in `PANEL_CATALOG` with `minW`/`minH`
 - [ ] `case` in `PanelContent.tsx`
-- [ ] Shared CSS classes; no hardcoded colors
-- [ ] Sirius I overrides in `App.css` only if the shared pattern needs theme-specific tuning
-
-Detailed Sirius I content rules: [SIRIUS-I-WIDGET-GUIDE.md](./SIRIUS-I-WIDGET-GUIDE.md).
+- [ ] shadcn components; no hardcoded colors
+- [ ] No widget-specific shell chrome in `App.tsx`
