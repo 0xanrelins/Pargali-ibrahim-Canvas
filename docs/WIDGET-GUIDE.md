@@ -1,8 +1,8 @@
 # Widget Guide
 
-How to add or customize widgets in PargalıIbrahim Canvas. Shell, grid, and themes: [THEME-GUIDE.md](./THEME-GUIDE.md).
+How to add or customize widgets in PargalıIbrahim Canvas. Shell, grid, and themes: [THEME-GUIDE.md](./THEME-GUIDE.md). Backend API: [../backend/README.md](../backend/README.md).
 
-**Scope:** Widget **body** only — table, chart, report content. The shell (title bar, drag handle, close, resize) lives in `App.tsx` as a shadcn `Card` and is shared by all widgets.
+**Scope:** Widget **body** only — table, chart, KPI content. The shell (title bar, drag handle, close, resize) lives in `App.tsx` as a shadcn `Card` and is shared by all widgets.
 
 ---
 
@@ -10,46 +10,42 @@ How to add or customize widgets in PargalıIbrahim Canvas. Shell, grid, and them
 
 | Layer | File | Responsibility |
 |-------|------|----------------|
-| Shell | `src/App.tsx` | shadcn `Card` — title, hint, close, drag/resize |
-| Body | `src/PanelContent.tsx` | Your data / chart / table |
+| Shell | `src/App.tsx` | shadcn `Card` — title, optional data hint, close, drag/resize |
+| Router | `src/PanelContent.tsx` | `switch (kind)` → panel component |
+| Body | `src/*Panel.tsx` | Widget-specific UI + data hooks |
 
 ```
 ┌─ CardHeader ─────────────────────────── × ─┐
-│  Data Table     market_ticks.parquet       │
+│  Chart 2              prediction_price    │
 ├─ CardContent ──────────────────────────────┤
-│  … widget content (PanelContent) …       │
+│  … widget content …                      │
 └──────────────────────────────────────────┘
 ```
 
-Do not add widget-specific shell styles. Put all content inside `CardContent` using shadcn components.
+KPI Card has no header data hint (dataset/metric shown in pickers). Other data widgets may show dataset name in the header via `PanelDataHint`.
 
 ---
 
-## shadcn-first (before any widget UI)
+## Widget instances
 
-1. Check shadcn: `npx shadcn@latest search @shadcn -q "<name>"`
-2. Read docs: `npx shadcn@latest docs <component>`
-3. Add if missing: `npx shadcn@latest add <component>`
-4. Compose in `PanelContent.tsx` — no hand-rolled table/button/dialog primitives
-
-See also [AGENTS.md](../AGENTS.md) → **shadcn-first workflow**.
+- `PANEL_CATALOG` in `panels.ts` — templates (`chart`, `data-table`, …)
+- Each added widget gets a **unique instance id** (`chart-a1b2c3`) via `createPanelInstance()`
+- **Widgets** menu → pick type → **adds** a new instance
+- Panel **X** → removes that instance
+- Layout `i` field = instance id
 
 ---
 
 ## Add a new widget
 
-### 1. Register in `src/panels.ts`
+### 1. Register template in `src/panels.ts`
 
 ```ts
-export type PanelKind =
-  | 'data-table'
-  // … add new kinds here …
-  | 'mywidget'
+export type PanelKind = 'data-table' | 'mywidget' // …
 
 export const PANEL_CATALOG: PanelDef[] = [
-  // …
   {
-    id: 'mywidget',
+    id: 'mywidget',        // template id (also kind prefix)
     title: 'My Widget',
     hint: 'Optional subtitle',
     kind: 'mywidget',
@@ -58,49 +54,66 @@ export const PANEL_CATALOG: PanelDef[] = [
 ]
 ```
 
-- `id` — unique key; used in layout and `WidgetSelect`
 - `minW` × `minH` — minimum size **and** default open size
 - lg grid: 36 columns, `rowHeight` 11px → height ≈ `h × 11px`
 
-### 2. Render in `src/PanelContent.tsx`
+### 2. Create panel component
 
-Add a `case` for your `kind`:
+Add `src/MyWidgetPanel.tsx` and route in `PanelContent.tsx`:
 
 ```tsx
 case 'mywidget':
-  return (
-    <div className="h-full min-h-20">
-      {/* your markup */}
-    </div>
-  )
+  return <MyWidgetPanel panelId={panelId} />
 ```
 
-Use an exhaustive `default` with `never` so new kinds fail at compile time if unhandled.
+Use an exhaustive `default` with `never`.
 
-### 3. Use shadcn components
+### 3. Widget picker
 
-Reuse existing patterns first:
+`WidgetSelect.tsx` reads `PANEL_CATALOG` — new templates appear automatically in the add menu.
 
-| Component | Use for |
-|-----------|---------|
-| `Tabs` + `Textarea` | Markdown notes (edit + preview) |
-| `Chart` | Time series, OHLC (Recharts via shadcn) |
-| `Table` | Tabular data, Parquet preview, query results |
-| `Card` + `Badge` | KPI / stat cards (add `badge` when needed) |
-| `Chart` | Time series (add `chart` when needed) |
-| `Skeleton` | Loading states (add when needed) |
+---
 
-Add shadcn components via CLI when needed:
+## Wire Parquet / live data
 
-```bash
-npx shadcn@latest add <component>
-```
+### Existing pattern
 
-Never hardcode hex colors — use semantic tokens (`text-up`, `text-bid`, `text-muted-foreground`, …).
+1. `ParquetDataProvider` in `App.tsx` — global dataset catalog
+2. `useWidgetParquetData(panelId, preferredName?)` — per-instance dataset, preview, series, time range
+3. `useKpiCardData(panelId)` — KPI-specific: schema + `/kpi` endpoint
+4. `WidgetDataPicker` — dataset selection dialog per widget
+5. `TimeRangeSelect` or `TimeRangePicker` — `15m | 1h | 6h | 24h | 7d | All`
 
-### 4. Widget picker
+### Data journey (recommended)
 
-`WidgetSelect.tsx` reads `PANEL_CATALOG` automatically — no extra step.
+1. **Data source** → set Parquet folder
+2. **Data Table** → pick dataset + columns (saves workspace defaults)
+3. Add Chart / KPI / Dashboard → inherit or override dataset per widget
+
+### Formatting
+
+| Helper | Use |
+|--------|-----|
+| `formatTime.ts` | Epoch ms/s → `HH:mm`, `MM/DD HH:mm:ss` |
+| `formatCellValue.ts` | Table cells, long id truncation |
+| `formatKpi.ts` | KPI value, caption, change % |
+
+---
+
+## Built-in widgets
+
+| Widget | kind | Data hook | Pickers |
+|--------|------|-----------|---------|
+| Notes | `notes` | `notesStorage` | — |
+| Data Table | `data-table` | `useWidgetParquetData` | dataset, columns, time range |
+| Chart | `chart` | `useWidgetParquetData` | dataset, time range |
+| KPI Card | `kpi-card` | `useKpiCardData` | dataset, metric, agg, range (dropdown) |
+| Dashboard | `dashboard` | `useWidgetParquetData` | dataset, time range |
+| Reports | `reports` | `useWidgetParquetData` (preview) | dataset, time range; export mock |
+
+### KPI aggregations
+
+`Last | Avg | Sum | Min | Max | Count | Change %` — computed server-side via `GET /api/datasets/{name}/kpi`.
 
 ---
 
@@ -118,46 +131,11 @@ Typography: Inter (theme default), `text-xs`, `tabular-nums` for numbers.
 
 ---
 
-## Built-in widgets (reference)
-
-| Widget | kind | minW × minH | Body pattern |
-|--------|------|-------------|--------------|
-| Notes | `notes` | 8 × 8 | `Tabs` + Edit/Preview toggle + `Textarea` |
-| Chart | `chart` | 9 × 7 | shadcn `Chart` + Recharts `LineChart` |
-| KPI Card | `kpi-card` | 4 × 3 | name + value + timestamp (left stack) |
-| Textarea | `textarea` | 6 × 5 | shadcn `Textarea` (notes / query) |
-| Data Table | `data-table` | 9 × 7 | shadcn `Table` + `TableFooter` |
-
-Add new widgets one at a time via shadcn components. Placeholder content in `PanelContent.tsx` is replaced with real data sources as you wire them up.
-
----
-
-## Wire live data
-
-1. Create hooks or services outside `PanelContent.tsx` (e.g. `src/hooks/useDatasetPreview.ts`)
-2. Pass data into `PanelContent` via props from `App.tsx`, or use context
-3. Keep rendering logic in the `case` branch; keep fetch/subscribe logic separate
-
-`CardContent` scrolls overflow. For charts, handle resize inside the widget (canvas `ResizeObserver` or chart library API).
-
----
-
-## Data formatting conventions
-
-| Type | Example |
-|------|---------|
-| Price | `67,840.20` |
-| Percent | `+2.4%`, `-0.8%` |
-| Time | `HH:mm:ss` |
-| Symbol | `ETH/USDT` |
-| PnL | `+$312`, `-$48` |
-
----
-
 ## Checklist
 
 - [ ] `PanelKind` union updated in `panels.ts`
 - [ ] Entry in `PANEL_CATALOG` with `minW`/`minH`
-- [ ] `case` in `PanelContent.tsx`
+- [ ] Panel component + `case` in `PanelContent.tsx`
 - [ ] shadcn components; no hardcoded colors
+- [ ] Per-widget state keyed by `panelId` (instance id)
 - [ ] No widget-specific shell chrome in `App.tsx`

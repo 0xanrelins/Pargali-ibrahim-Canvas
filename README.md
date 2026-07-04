@@ -1,25 +1,27 @@
 # PargalıIbrahim Canvas
 
-Raw trading terminal shell — draggable widget grid, shadcn/ui components, color themes, and layout persistence. No live data, no exchange integration. Use it as a starting point for your own research, analytics, charting, table dashboards, trade UI, or bot front-end.
+Raw trading terminal shell — draggable widget grid, shadcn/ui components, color themes, layout persistence, and a local Parquet data backend. Use it as a starting point for research, analytics, charting, dashboards, trade UI, or bot front-ends.
 
 ## Example
 
-Default theme with the Data Table widget — placeholder preview rows, ready to connect to Parquet or live feeds:
+Default theme with live Parquet-backed widgets:
 
 ![PargalıIbrahim Canvas](docs/terminal-example.png)
 
 ## What you get
 
-- **Widget grid** — drag, resize (8 directions), overlap/stack with z-index
-- **Data Table widget** — shadcn table for Parquet/query preview (more widgets added incrementally)
+- **Widget grid** — drag, resize (8 directions), overlap/stack with z-index; multiple instances per widget type
+- **Local Parquet backend** — FastAPI + DuckDB; folder or stream datasets (`trades`, `prediction_price`, …)
+- **Data widgets** — Data Table, Chart, KPI Card, Dashboard, Reports (preview), Notes
+- **Per-widget data binding** — dataset, columns, time range, KPI metric + aggregation
 - **5 color themes** — Neutral, Stone, Mauve, Taupe, Olive (shadcn presets)
-- **shadcn/ui shell** — Card panels, DropdownMenu, Table, Dialog
 - **Layout persistence** — workspace saved in `localStorage` (lg breakpoint)
-- **Responsive** — lg / md / sm breakpoints; md/sm auto-stack from lg order
 
-Stack: Vite, React 19, TypeScript, Tailwind v4, shadcn/ui, `react-grid-layout` v2.
+Stack: Vite, React 19, TypeScript, Tailwind v4, shadcn/ui, `react-grid-layout` v2, FastAPI, DuckDB.
 
 ## Quick start
+
+### Frontend
 
 ```bash
 git clone https://github.com/0xanrelins/Pargali-ibrahim-Canvas.git
@@ -28,7 +30,22 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`. Pick theme and widgets from the header dropdowns.
+Open `http://localhost:5173`.
+
+### Backend (Parquet data)
+
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python scripts/generate_sample.py   # optional sample data
+uvicorn app.main:app --reload --port 8000
+```
+
+In the UI: **Data source** → set your Parquet folder path (absolute path to `data/sample` or your own library) → Save.
+
+Vite proxies `/api` to `http://127.0.0.1:8000`. See [backend/README.md](backend/README.md) for API details.
 
 ## Customize
 
@@ -36,29 +53,21 @@ Open `http://localhost:5173`. Pick theme and widgets from the header dropdowns.
 |------|-------|
 | Add or change widget content | [docs/WIDGET-GUIDE.md](docs/WIDGET-GUIDE.md) |
 | Add or change a theme | [docs/THEME-GUIDE.md](docs/THEME-GUIDE.md) |
+| Roadmap / next work | [docs/NEXT-STEPS.md](docs/NEXT-STEPS.md) |
 | AI / agent context | [AGENTS.md](AGENTS.md) |
-
-Typical workflow:
-
-1. Wire real data (WebSocket, REST) into `PanelContent.tsx` per widget `kind`
-2. Add widgets in `src/panels.ts` and new `case` branches in `PanelContent.tsx`
-3. Add shadcn components with `npx shadcn@latest add <component>`
-4. Add color themes in `src/index.css` + `src/themeStorage.ts`
-5. Rebrand header logo/text in `src/App.tsx` and `public/`
 
 ## Key files
 
 | File | Role |
 |------|------|
 | `src/App.tsx` | Shell, grid, header |
-| `src/panels.ts` | Widget catalog, min sizes, default layout |
-| `src/PanelContent.tsx` | Widget body (replace placeholders with your data) |
+| `src/panels.ts` | Widget catalog + instance ids |
+| `src/PanelContent.tsx` | Widget body router |
+| `src/context/ParquetDataContext.tsx` | Dataset catalog + per-widget loading |
+| `src/api/client.ts` | Backend API client |
+| `backend/app/` | FastAPI + DuckDB dataset APIs |
 | `src/layoutStorage.ts` | Workspace persistence |
-| `src/themeStorage.ts` | Theme IDs + localStorage |
-| `src/index.css` | shadcn theme CSS variables |
-| `src/App.css` | Grid/resize overrides |
-| `src/components/ui/` | shadcn components |
-| `components.json` | shadcn config |
+| `src/datasetStorage.ts` | Per-widget dataset + workspace column defaults |
 
 ## License
 
