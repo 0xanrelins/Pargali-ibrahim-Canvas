@@ -2,6 +2,16 @@
 
 Guides for customizing and extending PargalıIbrahim Canvas.
 
+## Screenshots
+
+Live Parquet data — KPI cards, chart, data table, notes (Mauve theme):
+
+![Terminal workspace](./terminal-example.png)
+
+Running locally at `localhost:5173` with the widget picker:
+
+![Terminal live](./terminal-live.png)
+
 ## Start here
 
 | Guide | What it covers |
