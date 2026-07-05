@@ -1,27 +1,25 @@
 # PargalıIbrahim Canvas
 
-Raw trading terminal shell — draggable widget grid, shadcn/ui components, color themes, layout persistence, and a local Parquet data backend. Use it as a starting point for research, analytics, charting, dashboards, trade UI, or bot front-ends.
-
-## Example
-
-Default theme with live Parquet-backed widgets:
+Raw trading terminal shell — draggable widget grid, shadcn/ui themes, layout persistence, and a local **Parquet data backend**. Clone it as a starting point for research, analytics, charting, dashboards, trade UI, or bot front-ends.
 
 ![PargalıIbrahim Canvas](docs/terminal-example.png)
 
 ## What you get
 
-- **Widget grid** — drag, resize (8 directions), overlap/stack with z-index; multiple instances per widget type
-- **Local Parquet backend** — FastAPI + DuckDB; folder or stream datasets (`trades`, `prediction_price`, …)
-- **Data widgets** — Data Table, Chart, KPI Card, Dashboard, Reports (preview), Notes
-- **Per-widget data binding** — dataset, columns, time range, KPI metric + aggregation
-- **5 color themes** — Neutral, Stone, Mauve, Taupe, Olive (shadcn presets)
-- **Layout persistence** — workspace saved in `localStorage` (lg breakpoint)
+| Area | Details |
+|------|---------|
+| **Grid** | Drag, resize (8 handles), overlap/stack with z-index; multiple instances per widget |
+| **Backend** | FastAPI + DuckDB — flat `.parquet` files and nested **streams** (`trades`, `prediction_price`, …) |
+| **Widgets** | Data Table, Chart, KPI Card, Dashboard, Reports (preview), Notes |
+| **Data binding** | Per-widget dataset, columns, time range (`15m`–`7d`), KPI metric + aggregation |
+| **Themes** | 5 shadcn presets — Neutral, Stone, Mauve, Taupe, Olive |
+| **Persistence** | Workspace layout + widget config in `localStorage` |
 
-Stack: Vite, React 19, TypeScript, Tailwind v4, shadcn/ui, `react-grid-layout` v2, FastAPI, DuckDB.
+**Stack:** Vite · React 19 · TypeScript · Tailwind v4 · shadcn/ui · react-grid-layout v2 · FastAPI · DuckDB
 
 ## Quick start
 
-### Frontend
+### 1. Frontend
 
 ```bash
 git clone https://github.com/0xanrelins/Pargali-ibrahim-Canvas.git
@@ -30,44 +28,60 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`.
+Open [http://localhost:5173](http://localhost:5173).
 
-### Backend (Parquet data)
+### 2. Backend (Parquet data)
 
 ```bash
 cd backend
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python scripts/generate_sample.py   # optional sample data
+python scripts/generate_sample.py   # optional — writes data/sample/market_ticks.parquet
 uvicorn app.main:app --reload --port 8000
 ```
 
-In the UI: **Data source** → set your Parquet folder path (absolute path to `data/sample` or your own library) → Save.
+### 3. Connect data in the UI
 
-Vite proxies `/api` to `http://127.0.0.1:8000`. See [backend/README.md](backend/README.md) for API details.
+**Data source** → set your Parquet folder (absolute path, e.g. `…/data/sample` or your own library) → **Save**.
 
-## Customize
+Vite proxies `/api` → `http://127.0.0.1:8000`. Then open a **Data Table** or **Chart**, pick a dataset, and explore.
 
-| Task | Guide |
-|------|-------|
-| Add or change widget content | [docs/WIDGET-GUIDE.md](docs/WIDGET-GUIDE.md) |
-| Add or change a theme | [docs/THEME-GUIDE.md](docs/THEME-GUIDE.md) |
-| Roadmap / next work | [docs/NEXT-STEPS.md](docs/NEXT-STEPS.md) |
-| AI / agent context | [AGENTS.md](AGENTS.md) |
+## Documentation
+
+| Guide | Description |
+|-------|-------------|
+| [docs/README.md](docs/README.md) | Documentation index + typical workflows |
+| [docs/WIDGET-GUIDE.md](docs/WIDGET-GUIDE.md) | Add widgets, wire live data, formatters |
+| [docs/THEME-GUIDE.md](docs/THEME-GUIDE.md) | Themes, tokens, shell rules |
+| [backend/README.md](backend/README.md) | API reference — preview, series, KPI, time range |
+| [docs/NEXT-STEPS.md](docs/NEXT-STEPS.md) | Roadmap |
+| [AGENTS.md](AGENTS.md) | Architecture + AI agent conventions |
+
+## Project layout
+
+```
+src/
+  App.tsx                  Shell, grid, header
+  panels.ts                Widget catalog + instance ids
+  context/ParquetDataContext.tsx
+  api/client.ts            Backend client
+  *Panel.tsx               Widget bodies
+backend/
+  app/                     FastAPI + DuckDB
+  scripts/generate_sample.py
+docs/                      Guides (see docs/README.md)
+```
 
 ## Key files
 
 | File | Role |
 |------|------|
-| `src/App.tsx` | Shell, grid, header |
-| `src/panels.ts` | Widget catalog + instance ids |
-| `src/PanelContent.tsx` | Widget body router |
-| `src/context/ParquetDataContext.tsx` | Dataset catalog + per-widget loading |
-| `src/api/client.ts` | Backend API client |
-| `backend/app/` | FastAPI + DuckDB dataset APIs |
-| `src/layoutStorage.ts` | Workspace persistence |
-| `src/datasetStorage.ts` | Per-widget dataset + workspace column defaults |
+| `src/layoutStorage.ts` | Workspace layout persistence |
+| `src/datasetStorage.ts` | Per-widget dataset + column defaults |
+| `src/timeRangeStorage.ts` | Per-widget time range |
+| `src/kpiStorage.ts` | KPI metric + aggregation per widget |
+| `backend/.canvas-state.json` | Parquet folder path (gitignored) |
 
 ## License
 
