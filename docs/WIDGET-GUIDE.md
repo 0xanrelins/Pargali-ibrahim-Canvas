@@ -2,7 +2,9 @@
 
 How to add or customize widgets in PargalıIbrahim Canvas. Shell, grid, and themes: [THEME-GUIDE.md](./THEME-GUIDE.md). Backend API: [../backend/README.md](../backend/README.md).
 
-**Scope:** Widget **body** only — table, chart, KPI content. The shell (title bar, drag handle, close, resize) lives in `App.tsx` as a shadcn `Card` and is shared by all widgets.
+PargalıIbrahim Canvas is widget-native: start with built-in panels, then add your own market research widgets.
+
+**Scope:** Widget **body** only — table, chart, KPI content. The shell (title bar, configure action, close, resize) lives in `App.tsx` as a shadcn `Card` and is shared by all widgets.
 
 ---
 
@@ -10,19 +12,19 @@ How to add or customize widgets in PargalıIbrahim Canvas. Shell, grid, and them
 
 | Layer | File | Responsibility |
 |-------|------|----------------|
-| Shell | `src/App.tsx` | shadcn `Card` — title, optional data hint, close, drag/resize |
+| Shell | `src/App.tsx` | shadcn `Card` — title, optional data hint, configure, close, drag/resize |
 | Router | `src/PanelContent.tsx` | `switch (kind)` → panel component |
 | Body | `src/*Panel.tsx` | Widget-specific UI + data hooks |
 
 ```
-┌─ CardHeader ─────────────────────────── × ─┐
-│  Chart 2              prediction_price    │
-├─ CardContent ──────────────────────────────┤
-│  … widget content …                      │
-└──────────────────────────────────────────┘
+┌─ CardHeader ─────────────── ⚙ × ─┐
+│  Chart 2        prediction_price │
+├─ CardContent ────────────────────┤
+│  … widget content …              │
+└──────────────────────────────────┘
 ```
 
-KPI Card has no header data hint (dataset/metric shown in pickers). Other data widgets may show dataset name in the header via `PanelDataHint`.
+Data widgets use a small header **Configure** action (gear icon). Settings open in `WidgetSettingsSheet` — not per-widget dropdowns.
 
 ---
 
@@ -37,6 +39,12 @@ KPI Card has no header data hint (dataset/metric shown in pickers). Other data w
 ---
 
 ## Add a new widget
+
+The happy path is three files:
+
+1. `src/panels.ts`
+2. `src/MyWidgetPanel.tsx`
+3. `src/PanelContent.tsx`
 
 ### 1. Register template in `src/panels.ts`
 
@@ -76,19 +84,39 @@ Use an exhaustive `default` with `never`.
 
 ## Wire Parquet / live data
 
-### Existing pattern
+### Settings pattern
 
 1. `ParquetDataProvider` in `App.tsx` — global dataset catalog
-2. `useWidgetParquetData(panelId, preferredName?)` — per-instance dataset, preview, series, time range
-3. `useKpiCardData(panelId)` — KPI-specific: schema + `/kpi` endpoint
-4. `WidgetDataPicker` — dataset selection dialog per widget
-5. `TimeRangeSelect` or `TimeRangePicker` — `15m | 1h | 6h | 24h | 7d | All`
+2. `useWidgetParquetData(panelId)` or `useKpiCardData(panelId)` — per-instance data
+3. `useParquetWidgetSettings({...})` — register Configure sheet fields
+4. `WidgetSettingsSheet` in `App.tsx` — shared settings UI
+
+Data widgets call `useParquetWidgetSettings` with the fields they need:
+
+| Setting | Used by |
+|---------|---------|
+| Dataset | Table, Chart, KPI, Dashboard, Reports |
+| Time range | Table, Chart, KPI, Dashboard, Reports |
+| Columns | Table |
+| Metric | KPI |
+| Aggregation | KPI |
+
+Components:
+
+- `Sheet` — widget configuration panel
+- `Select` — dataset, metric, aggregation
+- Button row — time range (`15m | 1h | 6h | 24h | 7d | All`)
+- Checkbox list — table columns
+
+Add `panel.kind` to `CONFIGURABLE_PANEL_KINDS` in `panels.ts` to show the Configure button in the header.
 
 ### Data journey (recommended)
 
 1. **Data source** → set Parquet folder
-2. **Data Table** → pick dataset + columns (saves workspace defaults)
-3. Add Chart / KPI / Dashboard → inherit or override dataset per widget
+2. Registry refreshes automatically
+3. Add a widget
+4. Open **Configure**
+5. Choose dataset, range, and widget-specific fields
 
 ### Formatting
 
@@ -102,14 +130,14 @@ Use an exhaustive `default` with `never`.
 
 ## Built-in widgets
 
-| Widget | kind | Data hook | Pickers |
-|--------|------|-----------|---------|
+| Widget | kind | Data hook | Configure fields |
+|--------|------|-----------|------------------|
 | Notes | `notes` | `notesStorage` | — |
-| Data Table | `data-table` | `useWidgetParquetData` | dataset, columns, time range |
-| Chart | `chart` | `useWidgetParquetData` | dataset, time range |
-| KPI Card | `kpi-card` | `useKpiCardData` | dataset, metric, agg, range (dropdown) |
-| Dashboard | `dashboard` | `useWidgetParquetData` | dataset, time range |
-| Reports | `reports` | `useWidgetParquetData` (preview) | dataset, time range; export mock |
+| Data Table | `data-table` | `useWidgetParquetData` | dataset, range, columns |
+| Chart | `chart` | `useWidgetParquetData` | dataset, range |
+| KPI Card | `kpi-card` | `useKpiCardData` | dataset, range, metric, aggregation |
+| Dashboard | `dashboard` | `useWidgetParquetData` | dataset, range |
+| Reports | `reports` | `useWidgetParquetData` | dataset, range |
 
 ### KPI aggregations
 

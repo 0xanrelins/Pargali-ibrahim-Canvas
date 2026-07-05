@@ -68,6 +68,25 @@ export function DataSourceDialog() {
     }
   }, [open])
 
+  const loadRegistry = async () => {
+    setRegistryLoading(true)
+    setRegistryError(null)
+
+    try {
+      const response = await fetchRegistry()
+      setRegistry(response.registry)
+      setSelectedRegistryName((current) => current || (response.registry[0]?.name ?? ''))
+      return response.registry.length
+    } catch (registryLoadError) {
+      setRegistryError(
+        registryLoadError instanceof Error ? registryLoadError.message : 'Failed to load registry',
+      )
+      return null
+    } finally {
+      setRegistryLoading(false)
+    }
+  }
+
   const handleSaveFolder = async () => {
     setLoading(true)
     setError(null)
@@ -77,31 +96,20 @@ export function DataSourceDialog() {
       const settings = await saveSettings(parquetFolder.trim())
       setParquetFolder(settings.parquet_folder)
       setFolderReady(settings.folder_ready)
-      setRegistry([])
-      setSelectedRegistryName('')
-      setSavedMessage('Parquet folder saved')
       window.dispatchEvent(new CustomEvent('parquet-settings-changed'))
+
+      const count = await loadRegistry()
+      if (count === null) {
+        setSavedMessage('Folder saved — registry refresh failed')
+      } else if (count === 0) {
+        setSavedMessage('Folder saved — no datasets found')
+      } else {
+        setSavedMessage(`Folder saved — ${count} dataset${count === 1 ? '' : 's'} ready`)
+      }
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : 'Failed to save folder')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const loadRegistry = async () => {
-    setRegistryLoading(true)
-    setRegistryError(null)
-
-    try {
-      const response = await fetchRegistry()
-      setRegistry(response.registry)
-      setSelectedRegistryName((current) => current || (response.registry[0]?.name ?? ''))
-    } catch (registryLoadError) {
-      setRegistryError(
-        registryLoadError instanceof Error ? registryLoadError.message : 'Failed to load registry',
-      )
-    } finally {
-      setRegistryLoading(false)
     }
   }
 
@@ -122,7 +130,7 @@ export function DataSourceDialog() {
           <DialogDescription>Local Parquet folder for widgets.</DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="folder" className="min-h-0">
+        <Tabs defaultValue="folder" className="min-h-0" id="data-source-tabs">
           <TabsList variant="line" className="h-8 justify-start">
             <TabsTrigger value="folder">Folder</TabsTrigger>
             <TabsTrigger
@@ -184,7 +192,7 @@ export function DataSourceDialog() {
                 disabled={registryLoading}
                 onClick={() => void loadRegistry()}
               >
-                Refresh
+                Reload
               </Button>
             </div>
 

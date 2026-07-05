@@ -6,10 +6,9 @@ import {
   type ChartConfig,
 } from '@/components/ui/chart'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useParquetWidgetSettings } from '@/hooks/useParquetWidgetSettings'
 import { isParquetReady, useWidgetParquetData } from '@/hooks/useParquetData'
 import { formatSeriesLabel, formatSeriesTick } from '@/lib/parquetView'
-import { WidgetDataPicker } from './WidgetDataPicker'
-import { TimeRangeSelect } from './TimeRangeSelect'
 
 const mockChartData = [
   { x: '11:30', y: 67680 },
@@ -39,29 +38,20 @@ export function ChartPanel({ panelId }: ChartPanelProps) {
   const { state, datasets, selectedName, selectDataset, timeRange, setTimeRange, catalogStatus } =
     useWidgetParquetData(panelId, 'prediction_price')
 
-  const picker = (
-    <div className="mb-2 flex flex-wrap items-center justify-end gap-2">
-      <TimeRangeSelect
-        value={timeRange}
-        disabled={catalogStatus !== 'ready'}
-        onChange={setTimeRange}
-      />
-      <WidgetDataPicker
-        datasets={datasets}
-        selectedName={selectedName}
-        disabled={catalogStatus !== 'ready'}
-        onSelect={selectDataset}
-      />
-    </div>
-  )
+  useParquetWidgetSettings({
+    kind: 'chart',
+    panelId,
+    title: 'Chart',
+    datasets,
+    selectedName,
+    onDatasetChange: selectDataset,
+    timeRange,
+    onTimeRangeChange: setTimeRange,
+    disabled: catalogStatus !== 'ready',
+  })
 
   if (state.status === 'loading') {
-    return (
-      <>
-        {picker}
-        <Skeleton className="min-h-32 flex-1" />
-      </>
-    )
+    return <Skeleton className="min-h-32 flex-1" />
   }
 
   const live = isParquetReady(state)
@@ -76,45 +66,42 @@ export function ChartPanel({ panelId }: ChartPanelProps) {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {picker}
       <ChartContainer config={chartConfig} className="aspect-auto min-h-32 flex-1">
         <LineChart
-        accessibilityLayer
-        data={chartData}
-        margin={{ left: 0, right: 8, top: 8, bottom: 0 }}
-      >
-        <CartesianGrid vertical={false} />
-        <XAxis
-          dataKey="x"
-          tickLine={false}
-          axisLine={false}
-          tickMargin={8}
-          minTickGap={24}
-          tickFormatter={formatSeriesTick}
-        />
-        <YAxis
-          domain={['auto', 'auto']}
-          tickLine={false}
-          axisLine={false}
-          tickMargin={8}
-          width={52}
-          tickFormatter={(value) =>
-            Math.abs(value) >= 1000 ? `${Math.round(Number(value) / 1000)}k` : String(value)
-          }
-        />
-        <ChartTooltip
-          content={
-            <ChartTooltipContent labelFormatter={(label) => formatSeriesLabel(label)} />
-          }
-        />
-        <Line
-          type="monotone"
-          dataKey="y"
-          stroke="var(--color-y)"
-          strokeWidth={2}
-          dot={false}
-          name={yLabel}
-        />
+          accessibilityLayer
+          data={chartData}
+          margin={{ left: 0, right: 8, top: 8, bottom: 0 }}
+        >
+          <CartesianGrid vertical={false} />
+          <XAxis
+            dataKey="x"
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            minTickGap={24}
+            tickFormatter={formatSeriesTick}
+          />
+          <YAxis
+            domain={['auto', 'auto']}
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            width={52}
+            tickFormatter={(value) =>
+              Math.abs(value) >= 1000 ? `${Math.round(Number(value) / 1000)}k` : String(value)
+            }
+          />
+          <ChartTooltip
+            content={<ChartTooltipContent labelFormatter={(label) => formatSeriesLabel(label)} />}
+          />
+          <Line
+            type="monotone"
+            dataKey="y"
+            stroke="var(--color-y)"
+            strokeWidth={2}
+            dot={false}
+            name={yLabel}
+          />
         </LineChart>
       </ChartContainer>
     </div>

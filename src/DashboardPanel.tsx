@@ -31,8 +31,7 @@ import {
   formatSeriesTick,
 } from '@/lib/parquetView'
 import { isParquetReady, useWidgetParquetData } from '@/hooks/useParquetData'
-import { WidgetDataPicker } from './WidgetDataPicker'
-import { TimeRangeSelect } from './TimeRangeSelect'
+import { useParquetWidgetSettings } from '@/hooks/useParquetWidgetSettings'
 
 const mockMetrics = [
   { label: 'Last price', value: '67,840.20', change: '+2.4%', up: true },
@@ -78,28 +77,21 @@ export function DashboardPanel({ panelId }: DashboardPanelProps) {
   const { state, datasets, selectedName, selectDataset, timeRange, setTimeRange, catalogStatus } =
     useWidgetParquetData(panelId, 'trades')
 
-  const picker = (
-    <div className="flex flex-col gap-2">
-      <TimeRangeSelect
-        value={timeRange}
-        disabled={catalogStatus !== 'ready'}
-        onChange={setTimeRange}
-      />
-      <div className="flex justify-end">
-      <WidgetDataPicker
-        datasets={datasets}
-        selectedName={selectedName}
-        disabled={catalogStatus !== 'ready'}
-        onSelect={selectDataset}
-      />
-      </div>
-    </div>
-  )
+  useParquetWidgetSettings({
+    kind: 'dashboard',
+    panelId,
+    title: 'Dashboard',
+    datasets,
+    selectedName,
+    onDatasetChange: selectDataset,
+    timeRange,
+    onTimeRangeChange: setTimeRange,
+    disabled: catalogStatus !== 'ready',
+  })
 
   if (state.status === 'loading') {
     return (
       <div className="flex h-full flex-col gap-3">
-        {picker}
         <Skeleton className="h-14 w-full" />
         <Skeleton className="min-h-28 flex-1" />
         <Skeleton className="h-24 w-full" />
@@ -123,7 +115,6 @@ export function DashboardPanel({ panelId }: DashboardPanelProps) {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
-      {picker}
       <div className="grid shrink-0 gap-2 [grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr))]">
         {metrics.map((metric) => (
           <Card key={metric.label} size="sm" className="py-2 ring-border/60">

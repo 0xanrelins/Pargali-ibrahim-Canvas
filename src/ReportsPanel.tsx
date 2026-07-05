@@ -21,8 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import { formatCellValue } from '@/lib/formatCellValue'
 import { isParquetReady, useWidgetParquetData } from '@/hooks/useParquetData'
-import { WidgetDataPicker } from './WidgetDataPicker'
-import { TimeRangeSelect } from './TimeRangeSelect'
+import { useParquetWidgetSettings } from '@/hooks/useParquetWidgetSettings'
 
 type ReportStatus = 'ready' | 'running' | 'failed'
 
@@ -167,6 +166,18 @@ export function ReportsPanel({ panelId }: ReportsPanelProps) {
   const { state, datasets, selectedName, selectDataset, timeRange, setTimeRange, catalogStatus } =
     useWidgetParquetData(panelId, 'trades')
 
+  useParquetWidgetSettings({
+    kind: 'reports',
+    panelId,
+    title: 'Reports',
+    datasets,
+    selectedName,
+    onDatasetChange: selectDataset,
+    timeRange,
+    onTimeRangeChange: setTimeRange,
+    disabled: catalogStatus !== 'ready',
+  })
+
   const selectedReport =
     savedReports.find((report) => report.id === selectedId) ?? savedReports[0]
 
@@ -234,19 +245,7 @@ export function ReportsPanel({ panelId }: ReportsPanelProps) {
                     {liveDataset?.name ?? selectedReport.dataset} · {selectedReport.schedule}
                   </CardDescription>
                 </div>
-                <div className="flex shrink-0 flex-col items-end gap-1">
-                  <TimeRangeSelect
-                    value={timeRange}
-                    disabled={catalogStatus !== 'ready'}
-                    onChange={setTimeRange}
-                  />
-                  <div className="flex items-center gap-1">
-                  <WidgetDataPicker
-                    datasets={datasets}
-                    selectedName={selectedName}
-                    disabled={catalogStatus !== 'ready'}
-                    onSelect={selectDataset}
-                  />
+                <div className="flex shrink-0 items-center gap-1">
                   <Button type="button" variant="outline" size="xs" disabled>
                     <PlayIcon data-icon="inline-start" />
                     Run
@@ -259,7 +258,6 @@ export function ReportsPanel({ panelId }: ReportsPanelProps) {
                     <FileTextIcon data-icon="inline-start" />
                     PDF
                   </Button>
-                  </div>
                 </div>
               </div>
             </CardHeader>

@@ -15,6 +15,7 @@ import {
   pickDataset,
 } from '@/api/client'
 import type { DatasetPreview, DatasetSeries, DatasetSummary } from '@/api/types'
+import { EMPTY_DATASETS } from '@/api/types'
 import {
   DATASET_CHANGED_EVENT,
   WIDGET_DATA_CHANGED_EVENT,
@@ -261,7 +262,7 @@ export function useWidgetParquetData(
     }
   }, [catalog, effectiveTimeRange, preferredName, selectedName, widgetId])
 
-  const datasets = catalog.status === 'ready' ? catalog.datasets : []
+  const datasets = catalog.status === 'ready' ? catalog.datasets : EMPTY_DATASETS
 
   return {
     state,

@@ -7,6 +7,18 @@ type PanelGrid = Pick<
 
 export type PanelKind = 'chart' | 'dashboard' | 'data-table' | 'kpi-card' | 'notes' | 'reports'
 
+export const CONFIGURABLE_PANEL_KINDS = new Set<PanelKind>([
+  'chart',
+  'dashboard',
+  'data-table',
+  'kpi-card',
+  'reports',
+])
+
+export function isConfigurablePanelKind(kind: PanelKind) {
+  return CONFIGURABLE_PANEL_KINDS.has(kind)
+}
+
 export type PanelDef = {
   id: string
   title: string

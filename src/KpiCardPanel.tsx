@@ -1,11 +1,8 @@
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { formatKpiCaption, formatKpiContext, formatKpiValue } from '@/lib/formatKpi'
+import { useParquetWidgetSettings } from '@/hooks/useParquetWidgetSettings'
 import { isKpiCardReady, useKpiCardData } from '@/hooks/useKpiCardData'
-import { KpiAggPicker } from './KpiAggPicker'
-import { KpiMetricPicker } from './KpiMetricPicker'
-import { TimeRangePicker } from './TimeRangePicker'
-import { WidgetDataPicker } from './WidgetDataPicker'
 
 const mockKpi = {
   value: '67,840.20',
@@ -29,45 +26,30 @@ export function KpiCardPanel({ panelId }: KpiCardPanelProps) {
     setAggregation,
     timeRange,
     setTimeRange,
+    availableColumns,
     catalogStatus,
   } = useKpiCardData(panelId, 'trades')
 
-  const ready = isKpiCardReady(state)
-  const columns = ready ? state.columns : []
-
-  const picker = (
-    <div className="mb-2 flex flex-wrap items-center justify-end gap-2">
-      <WidgetDataPicker
-        datasets={datasets}
-        selectedName={selectedName}
-        disabled={catalogStatus !== 'ready'}
-        onSelect={selectDataset}
-      />
-      {columns.length > 0 && (
-        <KpiMetricPicker
-          columns={columns}
-          selectedColumn={metricColumn}
-          disabled={catalogStatus !== 'ready'}
-          onSelect={setMetric}
-        />
-      )}
-      <KpiAggPicker
-        selectedAggregation={aggregation}
-        disabled={catalogStatus !== 'ready'}
-        onSelect={setAggregation}
-      />
-      <TimeRangePicker
-        value={timeRange}
-        disabled={catalogStatus !== 'ready'}
-        onChange={setTimeRange}
-      />
-    </div>
-  )
+  useParquetWidgetSettings({
+    kind: 'kpi-card',
+    panelId,
+    title: 'KPI Card',
+    datasets,
+    selectedName,
+    onDatasetChange: selectDataset,
+    timeRange,
+    onTimeRangeChange: setTimeRange,
+    disabled: catalogStatus !== 'ready',
+    availableColumns,
+    metricColumn,
+    onMetricChange: setMetric,
+    aggregation,
+    onAggregationChange: setAggregation,
+  })
 
   if (state.status === 'loading') {
     return (
       <div className="flex h-full flex-col gap-2">
-        {picker}
         <Skeleton className="h-3 w-24" />
         <Skeleton className="h-8 w-32" />
         <Skeleton className="h-3 w-20" />
@@ -76,26 +58,16 @@ export function KpiCardPanel({ panelId }: KpiCardPanelProps) {
   }
 
   if (state.status === 'error') {
-    return (
-      <div className="flex h-full flex-col">
-        {picker}
-        <p className="text-xs text-destructive">{state.message}</p>
-      </div>
-    )
+    return <p className="text-xs text-destructive">{state.message}</p>
   }
 
-  if (ready) {
+  if (isKpiCardReady(state)) {
     const value = formatKpiValue(state.kpi)
-    const caption = formatKpiCaption(
-      state.kpi.metric_column,
-      state.kpi.aggregation,
-      timeRange,
-    )
+    const caption = formatKpiCaption(state.kpi.metric_column, state.kpi.aggregation, timeRange)
     const context = formatKpiContext(state.kpi)
 
     return (
       <div className="flex h-full flex-col">
-        {picker}
         <div className="flex flex-1 flex-col items-start justify-center gap-1">
           <span className="text-2xl font-semibold tabular-nums tracking-tight">{value.text}</span>
           <span className="text-xs text-muted-foreground">{caption}</span>
@@ -116,7 +88,6 @@ export function KpiCardPanel({ panelId }: KpiCardPanelProps) {
 
   return (
     <div className="flex h-full flex-col">
-      {picker}
       <div className="flex flex-1 flex-col items-start justify-center gap-1">
         <span className="text-2xl font-semibold tabular-nums tracking-tight">{mockKpi.value}</span>
         <span className="text-xs text-muted-foreground">{mockKpi.caption}</span>

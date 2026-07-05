@@ -20,7 +20,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { PanelContent } from './PanelContent'
-import { PanelDataHint } from './PanelDataHint'
+import { PanelHeaderControls } from './PanelHeaderControls'
 import { BREAKPOINTS, COLS, ROW_HEIGHT, breakpointFromWidth } from './breakpoints'
 import {
   appendPanel,
@@ -30,8 +30,9 @@ import {
   saveWorkspace,
   type WorkspaceState,
 } from './layoutStorage'
-import { panelDisplayTitle, resolvePanelInstance } from './panels'
+import { panelDisplayTitle, resolvePanelInstance, isConfigurablePanelKind } from './panels'
 import { ParquetDataProvider } from './context/ParquetDataContext'
+import { WidgetSettingsProvider } from './context/WidgetSettingsContext'
 import { DataSourceDialog } from './DataSourceDialog'
 import { ThemeSelect } from './ThemeSelect'
 import { WidgetSelect } from './WidgetSelect'
@@ -161,6 +162,7 @@ function App() {
 
   return (
     <ParquetDataProvider>
+    <WidgetSettingsProvider>
     <div className="flex h-screen min-h-screen flex-col bg-background text-foreground">
       <header className="flex items-center justify-between gap-4 px-3 py-2">
         <div className="flex items-center gap-2 pl-[5ch]">
@@ -193,7 +195,7 @@ function App() {
             rowHeight={ROW_HEIGHT}
             margin={[8, 8]}
             compactor={OVERLAP_COMPACTOR}
-            dragConfig={{ enabled: true, cancel: '.panel-close' }}
+            dragConfig={{ enabled: true, cancel: '.panel-close, .panel-controls' }}
             resizeConfig={{ enabled: true, handles: RESIZE_HANDLES }}
             onLayoutChange={handleLayoutChange}
             onDragStart={handleDragStart}
@@ -208,21 +210,19 @@ function App() {
                 className="group/panel h-full cursor-grab gap-0 py-0 active:cursor-grabbing"
                 style={{ zIndex: panelZIndex(panel.id) }}
               >
-                <CardHeader className="pointer-events-none gap-0 px-2 pb-1 pt-1.5">
-                  <div className="pointer-events-auto flex min-w-0 flex-1 items-center justify-between gap-2">
-                    <CardTitle className="truncate text-xs font-semibold">
-                      {panelDisplayTitle(panel, visiblePanels)}
-                    </CardTitle>
-                    {panel.kind !== 'kpi-card' && (
-                      <PanelDataHint panelId={panel.id} kind={panel.kind} fallback={panel.hint} />
-                    )}
-                  </div>
-                  <CardAction className="pointer-events-auto">
+                <CardHeader className="pointer-events-none !flex items-center gap-1.5 px-2 pb-1 pt-1.5">
+                  <CardTitle className="pointer-events-auto min-w-0 max-w-[30%] shrink truncate text-xs font-semibold">
+                    {panelDisplayTitle(panel, visiblePanels)}
+                  </CardTitle>
+                  {isConfigurablePanelKind(panel.kind) && (
+                    <PanelHeaderControls panelId={panel.id} />
+                  )}
+                  <CardAction className="pointer-events-auto !col-start-auto !row-span-1 !row-start-auto ml-auto shrink-0">
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon-xs"
-                      className="panel-close opacity-0 transition-opacity group-hover/panel:opacity-100"
+                      className="panel-close shrink-0 opacity-0 transition-opacity group-hover/panel:opacity-100"
                       aria-label={`${panel.title} panelini kapat`}
                       onClick={() => handleRemovePanel(panel.id)}
                     >
@@ -245,6 +245,7 @@ function App() {
         )}
       </main>
     </div>
+    </WidgetSettingsProvider>
     </ParquetDataProvider>
   )
 }

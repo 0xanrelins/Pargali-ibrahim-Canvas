@@ -5,6 +5,9 @@ export type DatasetSummary = {
   row_count: number
 }
 
+export const EMPTY_DATASETS: DatasetSummary[] = []
+export const EMPTY_COLUMNS: string[] = []
+
 export type DatasetSchemaColumn = {
   name: string
   type: string

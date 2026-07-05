@@ -2,7 +2,7 @@
 
 ## Goal
 
-Make PargalıIbrahim Canvas able to load local/live market data and display it through tables, charts, reports, and dashboards.
+Make PargalıIbrahim Canvas a market research workspace canvas where users can combine built-in panels and custom widgets.
 
 ## Done
 
@@ -14,18 +14,24 @@ Make PargalıIbrahim Canvas able to load local/live market data and display it t
 6. KPI aggregations — Last, Avg, Sum, Min, Max, Count, Change % ✅
 7. Timestamp / cell formatters ✅
 8. Data Table column picker + workspace defaults ✅
+9. Auto registry refresh on folder save ✅
+10. Shared Configure sheet for data widgets ✅
 
 ## Remaining
 
 | Priority | Task |
 |----------|------|
-| 1 | Reports — saved queries + CSV/PDF export (UI mock today) |
-| 2 | Backend performance — large stream queries (indexing, caching, file pruning) |
-| 3 | WebSocket / live feed (last) |
+| 1 | Custom widget path — template/scaffold docs and examples |
+| 2 | Reports — saved queries + CSV/PDF export (UI mock today) |
+| 3 | Backend performance — large stream queries (indexing, caching, file pruning) |
+| 4 | WebSocket / live feed (last) |
 
 ## Optional polish
 
-- Time range as dropdown on Chart / Table / Dashboard (KPI already uses dropdown)
+- Widget gallery / example workflows
+- Blank widget template
+- Bot monitor widget example
+- Strategy notebook widget
 - OHLC / candlestick chart type
 - Global vs per-widget range sync toggle
 

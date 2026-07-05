@@ -1,27 +1,28 @@
 # Documentation
 
-Guides for customizing and extending PargalıIbrahim Canvas.
+Guides for building and extending your market research workspace canvas.
 
 ## Screenshots
 
 Live Parquet data — KPI cards, chart, data table, notes (Mauve theme):
 
-![Terminal workspace](./terminal-example.png)
+![Market workspace](./terminal-example.png)
 
 Running locally at `localhost:5173` with the widget picker:
 
-![Terminal live](./terminal-live.png)
+![Canvas live](./terminal-live.png)
 
 ## Start here
 
 | Guide | What it covers |
 |-------|----------------|
-| [../README.md](../README.md) | Overview, quick start (frontend + backend) |
-| [WIDGET-GUIDE.md](./WIDGET-GUIDE.md) | Add widgets, wire Parquet data, per-instance state |
+| [../README.md](../README.md) | Product overview, quick start, custom widget path |
+| [WIDGET-GUIDE.md](./WIDGET-GUIDE.md) | Add widgets, wire Parquet data, standard widget settings |
 | [THEME-GUIDE.md](./THEME-GUIDE.md) | Color themes, shadcn tokens, shell rules |
 | [../backend/README.md](../backend/README.md) | FastAPI + DuckDB API, streams, KPI, time range |
 | [NEXT-STEPS.md](./NEXT-STEPS.md) | Roadmap — done vs remaining |
-| [../AGENTS.md](../AGENTS.md) | AI agent context, architecture, conventions |
+| [AGENTS.md](AGENTS.md) | Architecture + AI agent conventions |
+| [docs/PRODUCT-POSITIONING.md](docs/PRODUCT-POSITIONING.md) | Product positioning + UX direction |
 
 ## Typical workflows
 
@@ -30,14 +31,15 @@ Running locally at `localhost:5173` with the widget picker:
 1. Start backend → `uvicorn app.main:app --reload --port 8000`
 2. Start frontend → `npm run dev`
 3. **Data source** → absolute path to your Parquet folder → Save
+4. Registry refreshes automatically
 
 **Build a workspace**
 
-1. Open **Data Table** → pick dataset + columns (saves workspace defaults)
-2. Add **Chart**, **KPI Card**, or **Dashboard** — each instance has its own dataset and time range
+1. Add a widget: Chart, KPI Card, Data Table, Notes, Dashboard, Reports
+2. Open **Configure** for dataset, range, fields, and calculations
 3. Drag, resize, stack panels — layout persists in `localStorage`
 
-**Extend the shell**
+**Create a widget**
 
 - New widget → `panels.ts` + panel component + `PanelContent.tsx` ([WIDGET-GUIDE](./WIDGET-GUIDE.md))
 - New theme → `index.css` + `themeStorage.ts` ([THEME-GUIDE](./THEME-GUIDE.md))

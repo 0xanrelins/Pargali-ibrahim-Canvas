@@ -1,21 +1,49 @@
 # PargalıIbrahim Canvas
 
-Raw trading terminal shell — draggable widget grid, shadcn/ui themes, layout persistence, and a local **Parquet data backend**. Clone it as a starting point for research, analytics, charting, dashboards, trade UI, or bot front-ends.
+A market research workspace canvas for building custom trading and research widgets.
+
+Start from a blank canvas. Add built-in panels. Create your own widgets for charts, KPIs, notes, datasets, bots, and workflows.
 
 ![PargalıIbrahim Canvas](docs/terminal-example.png)
+
+## Why this exists
+
+Most market tools force a fixed workflow. PargalıIbrahim Canvas gives you a surface you can reshape around your own research process.
+
+## What you can build
+
+- Research dashboards
+- Strategy monitoring panels
+- Bot control surfaces
+- Dataset explorers
+- Trade review workspaces
+- Custom market workflows
 
 ## What you get
 
 | Area | Details |
 |------|---------|
-| **Grid** | Drag, resize (8 handles), overlap/stack with z-index; multiple instances per widget |
+| **Canvas** | Blank draggable workspace; resize, overlap, stack, and persist panels |
 | **Backend** | FastAPI + DuckDB — flat `.parquet` files and nested **streams** (`trades`, `prediction_price`, …) |
 | **Widgets** | Data Table, Chart, KPI Card, Dashboard, Reports (preview), Notes |
+| **Custom widgets** | Add your own panels through the widget catalog and `PanelContent` router |
 | **Data binding** | Per-widget dataset, columns, time range (`15m`–`7d`), KPI metric + aggregation |
 | **Themes** | 5 shadcn presets — Neutral, Stone, Mauve, Taupe, Olive |
 | **Persistence** | Workspace layout + widget config in `localStorage` |
 
-**Stack:** Vite · React 19 · TypeScript · Tailwind v4 · shadcn/ui · react-grid-layout v2 · FastAPI · DuckDB
+**Stack:** Vite · React 19 · TypeScript · Tailwind v4 · shadcn/ui · [react-grid-layout](https://github.com/react-grid-layout/react-grid-layout) v2 · FastAPI · DuckDB
+
+The draggable canvas grid is built on **react-grid-layout** — drag, resize, overlap, and layout persistence all flow through it.
+
+## Create your own widget
+
+Widget creation is intentionally small:
+
+1. Add a template in `src/panels.ts`
+2. Create a panel component, e.g. `src/MyWidgetPanel.tsx`
+3. Route it in `src/PanelContent.tsx`
+
+Use [docs/WIDGET-GUIDE.md](docs/WIDGET-GUIDE.md) as the main path for custom panels.
 
 ## Quick start
 
@@ -43,9 +71,9 @@ uvicorn app.main:app --reload --port 8000
 
 ### 3. Connect data in the UI
 
-**Data source** → set your Parquet folder (absolute path, e.g. `…/data/sample` or your own library) → **Save**.
+**Data source** → set your Parquet folder (absolute path) → **Save**. Registry refreshes automatically.
 
-Vite proxies `/api` → `http://127.0.0.1:8000`. Then open a **Data Table** or **Chart**, pick a dataset, and explore.
+Add widgets, then use the header dropdowns on each panel to set dataset, columns, time range, and aggregation.
 
 ## Documentation
 
@@ -57,6 +85,7 @@ Vite proxies `/api` → `http://127.0.0.1:8000`. Then open a **Data Table** or *
 | [backend/README.md](backend/README.md) | API reference — preview, series, KPI, time range |
 | [docs/NEXT-STEPS.md](docs/NEXT-STEPS.md) | Roadmap |
 | [AGENTS.md](AGENTS.md) | Architecture + AI agent conventions |
+| [docs/PRODUCT-POSITIONING.md](docs/PRODUCT-POSITIONING.md) | Product positioning + UX direction |
 
 ## Project layout
 
@@ -83,6 +112,20 @@ docs/                      Guides (see docs/README.md)
 | `src/kpiStorage.ts` | KPI metric + aggregation per widget |
 | `backend/.canvas-state.json` | Parquet folder path (gitignored) |
 
+## Credits
+
+| Project | Role | License |
+|---------|------|---------|
+| [react-grid-layout](https://github.com/react-grid-layout/react-grid-layout) | Draggable, resizable widget grid | MIT |
+| [shadcn/ui](https://ui.shadcn.com) | UI components | MIT |
+| [Recharts](https://recharts.org) | Charts | MIT |
+
+See `package.json` for the full dependency list. Third-party packages keep their original licenses.
+
 ## License
 
-MIT — see [LICENSE](LICENSE). Personal and commercial use allowed; no warranty.
+**Non-commercial** — see [LICENSE](LICENSE).
+
+- Personal, educational, and private research use: allowed
+- Commercial use: requires written permission from the copyright holder
+- No warranty

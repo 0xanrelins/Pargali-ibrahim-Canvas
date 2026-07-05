@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { fetchDatasetKpi, fetchDatasetSchema, pickDataset } from '@/api/client'
 import type { DatasetKpi, DatasetSummary } from '@/api/types'
+import { EMPTY_COLUMNS, EMPTY_DATASETS } from '@/api/types'
 import {
   DATASET_CHANGED_EVENT,
   loadWorkspaceDataConfig,
@@ -73,6 +74,7 @@ export function useKpiCardData(widgetId: string, preferredName = 'trades') {
   const [timeRange, setTimeRangeState] = useState<TimeRange>(
     () => loadWidgetTimeRange(widgetId),
   )
+  const [availableColumns, setAvailableColumns] = useState<string[]>(EMPTY_COLUMNS)
   const [state, setState] = useState<KpiCardState>({ status: 'loading' })
 
   const selectDataset = useCallback(
@@ -138,6 +140,7 @@ export function useKpiCardData(widgetId: string, preferredName = 'trades') {
       try {
         const schema = await fetchDatasetSchema(selectedDataset.name)
         const columns = schema.schema.map((column) => column.name)
+        setAvailableColumns(columns)
         const savedMetric = loadWidgetKpiColumn(widgetId)
         const metric =
           metricColumn && columns.includes(metricColumn)
@@ -191,7 +194,7 @@ export function useKpiCardData(widgetId: string, preferredName = 'trades') {
     }
   }, [aggregation, catalog, metricColumn, preferredName, selectedName, timeRange, widgetId])
 
-  const datasets = catalog.status === 'ready' ? catalog.datasets : []
+  const datasets = catalog.status === 'ready' ? catalog.datasets : EMPTY_DATASETS
 
   return {
     state,
@@ -204,6 +207,7 @@ export function useKpiCardData(widgetId: string, preferredName = 'trades') {
     setAggregation: setAggregationChoice,
     timeRange,
     setTimeRange,
+    availableColumns,
     catalogStatus: catalog.status,
   }
 }

@@ -4,7 +4,7 @@ Context for AI agents helping users customize this repository.
 
 ## What this project is
 
-A **raw trading terminal UI shell** — not a finished product. Users clone it to build personal interfaces for:
+A **market research workspace canvas** — not a finished product. Users clone it to build personal interfaces for:
 
 - Market data research and analytics
 - Charting and dashboards
@@ -31,8 +31,8 @@ backend/app/               → FastAPI + DuckDB Parquet queries
 layoutStorage.ts           → localStorage workspace (activePanels + lg layout)
 datasetStorage.ts          → per-widget dataset + workspace column defaults
 timeRangeStorage.ts        → per-widget time range
-kpiStorage.ts              → per-widget KPI metric + aggregation
-themeStorage.ts            → theme id + localStorage
+WidgetSettingsContext.tsx  → Configure sheet registry + open state
+WidgetSettingsSheet.tsx    → shared dataset/range/columns/metric settings
 ```
 
 Grid: 36/24/12 columns (lg/md/sm), `rowHeight` 11px, overlap allowed, z-index on last interaction. Only **lg** layout is persisted.
@@ -87,8 +87,11 @@ Before any new UI work:
 | `chart` | `ChartPanel.tsx`, `DashboardPanel.tsx` |
 | `table` | `DataTablePanel.tsx`, `ReportsPanel.tsx` |
 | `badge` | `DashboardPanel`, `ReportsPanel`, `DataSourceDialog` |
-| `dropdown-menu` | `ThemeSelect`, `WidgetSelect`, metric/range pickers |
-| `dialog` | `DataSourceDialog`, `WidgetDataPicker`, `DataTablePanel` |
+| `dropdown-menu` | `ThemeSelect`, `WidgetSelect` |
+| `dialog` | `DataSourceDialog` |
+| `sheet` | `WidgetSettingsSheet` (Configure) |
+| `select` | Widget settings — dataset, metric, aggregation |
+| `label`, `separator` | Widget settings form layout |
 | `skeleton` | loading states in data widgets |
 
 ### Intentionally custom (not shadcn)
@@ -97,7 +100,8 @@ Before any new UI work:
 |------|-----|
 | `react-grid-layout` + `App.css` | Drag/resize grid — no shadcn equivalent |
 | `layoutStorage.ts`, `themeStorage.ts`, `datasetStorage.ts` | Persistence logic |
-| `ThemeSelect`, `WidgetSelect`, `WidgetDataPicker`, `TimeRangeSelect` | Thin app wrappers composing shadcn |
+| `ThemeSelect`, `WidgetSelect` | Thin app wrappers composing shadcn |
+| `WidgetSettingsSheet`, `useParquetWidgetSettings` | Shared Configure sheet for data widgets |
 | `formatTime.ts`, `formatCellValue.ts` | Epoch timestamp + cell display helpers |
 
 ## Themes

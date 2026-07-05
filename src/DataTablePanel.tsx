@@ -1,14 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Columns3Icon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Table,
   TableBody,
@@ -23,9 +13,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { formatCellValue, getCellTitle } from '@/lib/formatCellValue'
 import { loadWorkspaceDataConfig, saveWorkspaceDataConfig } from '@/datasetStorage'
+import { useParquetWidgetSettings } from '@/hooks/useParquetWidgetSettings'
 import { isParquetReady, useWidgetParquetData } from '@/hooks/useParquetData'
-import { WidgetDataPicker } from './WidgetDataPicker'
-import { TimeRangeSelect } from './TimeRangeSelect'
+import { EMPTY_COLUMNS } from '@/api/types'
 
 const tableHeadClass = 'h-7 px-2 text-xs font-medium text-muted-foreground'
 const tableCellClass = 'px-2 py-1.5 tabular-nums'
@@ -86,57 +76,6 @@ function LoadingTable() {
   )
 }
 
-type ColumnPickerProps = {
-  columns: string[]
-  selectedColumns: string[]
-  onChange: (columns: string[]) => void
-}
-
-function ColumnPicker({ columns, selectedColumns, onChange }: ColumnPickerProps) {
-  const selectedSet = new Set(selectedColumns)
-
-  const toggleColumn = (column: string) => {
-    if (selectedSet.has(column)) {
-      const next = selectedColumns.filter((item) => item !== column)
-      if (next.length > 0) onChange(next)
-      return
-    }
-    onChange([...selectedColumns, column])
-  }
-
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button type="button" variant="outline" size="xs">
-          <Columns3Icon data-icon="inline-start" />
-          Columns ({selectedColumns.length})
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Select columns</DialogTitle>
-          <DialogDescription>Choose visible columns for Data Table.</DialogDescription>
-        </DialogHeader>
-        <div className="max-h-72 overflow-auto rounded-md ring-1 ring-border/60">
-          {columns.map((column) => (
-            <label
-              key={column}
-              className="flex cursor-pointer items-center gap-2 px-2 py-2 hover:bg-muted/60"
-            >
-              <input
-                type="checkbox"
-                checked={selectedSet.has(column)}
-                onChange={() => toggleColumn(column)}
-              />
-              <span className="truncate text-xs">{column}</span>
-            </label>
-          ))}
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
 type DataTablePanelProps = {
   panelId: string
 }
@@ -145,6 +84,7 @@ export function DataTablePanel({ panelId }: DataTablePanelProps) {
   const { state, datasets, selectedName, selectDataset, timeRange, setTimeRange, catalogStatus } =
     useWidgetParquetData(panelId, 'trades')
   const [selectedColumns, setSelectedColumns] = useState<string[]>(() => loadWorkspaceDataConfig().columns)
+  const [availableColumns, setAvailableColumns] = useState<string[]>(EMPTY_COLUMNS)
 
   useEffect(() => {
     if (!isParquetReady(state)) return
@@ -155,19 +95,26 @@ export function DataTablePanel({ panelId }: DataTablePanelProps) {
         ? saved.columns.filter((column) => state.preview.columns.includes(column))
         : []
 
+    setAvailableColumns(state.preview.columns)
     setSelectedColumns(validSavedColumns.length > 0 ? validSavedColumns : state.preview.columns)
   }, [state])
 
-  const handleSelectDataset = (name: string) => {
-    saveWorkspaceDataConfig({ datasetName: name, columns: [] })
-    setSelectedColumns([])
-    selectDataset(name)
-  }
+  const handleSelectDataset = useCallback(
+    (name: string) => {
+      saveWorkspaceDataConfig({ datasetName: name, columns: [] })
+      setSelectedColumns([])
+      selectDataset(name)
+    },
+    [selectDataset],
+  )
 
-  const handleColumnChange = (columns: string[]) => {
-    setSelectedColumns(columns)
-    saveWorkspaceDataConfig({ datasetName: selectedName, columns })
-  }
+  const handleColumnChange = useCallback(
+    (columns: string[]) => {
+      setSelectedColumns(columns)
+      saveWorkspaceDataConfig({ datasetName: selectedName, columns })
+    },
+    [selectedName],
+  )
 
   const ready = isParquetReady(state)
   const previewColumns = ready ? state.preview.columns : []
@@ -178,63 +125,36 @@ export function DataTablePanel({ panelId }: DataTablePanelProps) {
     [previewColumns, visibleColumns],
   )
 
-  const picker = (
-    <div className="mb-2 flex flex-col gap-2">
-      <TimeRangeSelect
-        value={timeRange}
-        disabled={catalogStatus !== 'ready'}
-        onChange={setTimeRange}
-      />
-      <div className="flex flex-wrap items-center justify-end gap-2">
-      <WidgetDataPicker
-        datasets={datasets}
-        selectedName={selectedName}
-        disabled={catalogStatus !== 'ready'}
-        onSelect={handleSelectDataset}
-      />
-      {ready && (
-        <ColumnPicker
-          columns={state.preview.columns}
-          selectedColumns={selectedColumns}
-          onChange={handleColumnChange}
-        />
-      )}
-      </div>
-    </div>
-  )
+  useParquetWidgetSettings({
+    kind: 'data-table',
+    panelId,
+    title: 'Data Table',
+    datasets,
+    selectedName,
+    onDatasetChange: handleSelectDataset,
+    timeRange,
+    onTimeRangeChange: setTimeRange,
+    disabled: catalogStatus !== 'ready',
+    availableColumns,
+    selectedColumns,
+    onColumnsChange: handleColumnChange,
+  })
 
   if (state.status === 'loading') {
-    return (
-      <>
-        {picker}
-        <LoadingTable />
-      </>
-    )
+    return <LoadingTable />
   }
   if (state.status === 'error') {
-    return (
-      <>
-        {picker}
-        <p className="text-xs text-destructive">{state.message}</p>
-      </>
-    )
+    return <p className="text-xs text-destructive">{state.message}</p>
   }
   if (!isParquetReady(state)) {
-    return (
-      <>
-        {picker}
-        <MockDataTable />
-      </>
-    )
+    return <MockDataTable />
   }
 
   const { preview, dataset } = state
 
   return (
-    <>
-      {picker}
-      <Table>
-        <TableCaption className="sr-only">Preview rows from {dataset.name}</TableCaption>
+    <Table>
+      <TableCaption className="sr-only">Preview rows from {dataset.name}</TableCaption>
       <TableHeader>
         <TableRow className="hover:bg-transparent">
           {visibleColumns.map((column) => (
@@ -268,15 +188,14 @@ export function DataTablePanel({ panelId }: DataTablePanelProps) {
       <TableFooter>
         <TableRow className="hover:bg-transparent">
           <TableCell colSpan={visibleColumns.length} className="py-2 text-xs text-muted-foreground">
-                {preview.rows.length} preview rows · {dataset.name}
-                {dataset.row_count > 0
-                  ? ` · ${dataset.row_count.toLocaleString()} total`
-                  : ` · ${dataset.file_count.toLocaleString()} files`}
-                {` · columns: ${visibleColumns.join(', ')}`}
+            {preview.rows.length} preview rows · {dataset.name}
+            {dataset.row_count > 0
+              ? ` · ${dataset.row_count.toLocaleString()} total`
+              : ` · ${dataset.file_count.toLocaleString()} files`}
+            {` · columns: ${visibleColumns.join(', ')}`}
           </TableCell>
         </TableRow>
       </TableFooter>
-      </Table>
-    </>
+    </Table>
   )
 }
