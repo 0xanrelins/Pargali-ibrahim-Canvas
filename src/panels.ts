@@ -5,7 +5,14 @@ type PanelGrid = Pick<
   'x' | 'y' | 'w' | 'h' | 'minW' | 'minH' | 'maxW' | 'maxH'
 >
 
-export type PanelKind = 'chart' | 'dashboard' | 'data-table' | 'kpi-card' | 'notes' | 'reports'
+export type PanelKind =
+  | 'chart'
+  | 'dashboard'
+  | 'data-table'
+  | 'kpi-card'
+  | 'market-times'
+  | 'notes'
+  | 'reports'
 
 export const CONFIGURABLE_PANEL_KINDS = new Set<PanelKind>([
   'chart',
@@ -56,6 +63,13 @@ export const PANEL_CATALOG: PanelDef[] = [
     hint: 'Markdown · local save',
     kind: 'notes',
     grid: { x: 0, y: 4, w: 12, h: 12, minW: 8, minH: 8 },
+  },
+  {
+    id: 'market-times',
+    title: 'Market Times',
+    hint: 'Exchange sessions · open/close',
+    kind: 'market-times',
+    grid: { x: 0, y: 0, w: 10, h: 12, minW: 8, minH: 10 },
   },
   {
     id: 'chart',

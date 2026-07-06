@@ -2,6 +2,7 @@ import { ChartPanel } from './ChartPanel'
 import { DashboardPanel } from './DashboardPanel'
 import { DataTablePanel } from './DataTablePanel'
 import { KpiCardPanel } from './KpiCardPanel'
+import { MarketTimesPanel } from './MarketTimesPanel'
 import { NotesPanel } from './NotesPanel'
 import { ReportsPanel } from './ReportsPanel'
 import type { PanelKind } from './panels'
@@ -15,6 +16,8 @@ export function PanelContent({ panelId, kind }: PanelContentProps) {
   switch (kind) {
     case 'notes':
       return <NotesPanel />
+    case 'market-times':
+      return <MarketTimesPanel />
     case 'dashboard':
       return <DashboardPanel panelId={panelId} />
     case 'reports':

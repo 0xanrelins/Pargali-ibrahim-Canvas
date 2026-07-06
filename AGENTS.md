@@ -4,14 +4,14 @@ Context for AI agents helping users customize this repository.
 
 ## What this project is
 
-A **market research workspace canvas** — not a finished product. Users clone it to build personal interfaces for:
+A **market research workspace canvas** with a **reusable widget model** — not a finished product. Users clone it to build personal interfaces for:
 
 - Market data research and analytics
 - Charting and dashboards
 - Trade execution UI
 - Bot monitoring and control panels
 
-**Included:** draggable/resizable widget grid, layout persistence, 5 shadcn color themes, shadcn/ui components, local Parquet backend (FastAPI + DuckDB), live data widgets (table, chart, KPI, dashboard, reports preview, notes).
+**Included:** draggable/resizable widget grid, layout persistence, 5 shadcn color themes, shadcn/ui components, local Parquet backend (FastAPI + DuckDB), reusable widget model, live data widgets (table, chart, KPI, dashboard, reports preview, notes, market times).
 
 **Not included:** live WebSocket feeds, exchange APIs, auth.
 
@@ -37,7 +37,7 @@ WidgetSettingsSheet.tsx    → shared dataset/range/columns/metric settings
 
 Grid: 36/24/12 columns (lg/md/sm), `rowHeight` 11px, overlap allowed, z-index on last interaction. Only **lg** layout is persisted.
 
-**Widget instances:** `PANEL_CATALOG` defines templates; each open panel gets a unique id (`chart-a1b2c3`). Widgets menu **adds** instances; panel **X** closes. Each instance has its own dataset, time range, and KPI config in localStorage.
+**Widget instances:** `PANEL_CATALOG` defines templates; each open panel gets a unique id (`chart-a1b2c3`). Widgets menu **adds** instances; panel **X** closes. Each instance has its own dataset, time range, and KPI config in localStorage. **Reusable widget** = register template once, add many instances, port bodies from other projects ([WIDGET-GUIDE.md](docs/WIDGET-GUIDE.md)).
 
 ## Common user tasks
 
@@ -119,6 +119,7 @@ Before any new UI work:
 | kind | Purpose |
 |------|---------|
 | `notes` | Markdown editor + preview (localStorage) |
+| `market-times` | Exchange sessions — open/close, countdown (no backend) |
 | `dashboard` | KPI row, chart, symbol table |
 | `reports` | Report library + dataset preview (export mock) |
 | `chart` | Line chart (Recharts), per-widget dataset + time range |

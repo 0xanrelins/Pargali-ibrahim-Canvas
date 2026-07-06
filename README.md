@@ -1,8 +1,8 @@
 # PargalıIbrahim Canvas
 
-A market research workspace canvas for building custom trading and research widgets.
+A market research workspace canvas for building **reusable** custom trading and research widgets.
 
-Start from a blank canvas. Add built-in panels. Create your own widgets for charts, KPIs, notes, datasets, bots, and workflows.
+Start from a blank canvas. Add built-in panels. Create your own widgets — register once, add many instances, port from other projects.
 
 ![PargalıIbrahim Canvas](docs/terminal-example.png)
 
@@ -25,7 +25,8 @@ Most market tools force a fixed workflow. PargalıIbrahim Canvas gives you a sur
 |------|---------|
 | **Canvas** | Blank draggable workspace; resize, overlap, stack, and persist panels |
 | **Backend** | FastAPI + DuckDB — flat `.parquet` files and nested **streams** (`trades`, `prediction_price`, …) |
-| **Widgets** | Data Table, Chart, KPI Card, Dashboard, Reports (preview), Notes |
+| **Widgets** | Data Table, Chart, KPI Card, Dashboard, Reports (preview), Notes, Market Times |
+| **Reusable widgets** | Register a template once in `panels.ts`; add many instances; each keeps its own config |
 | **Custom widgets** | Add your own panels through the widget catalog and `PanelContent` router |
 | **Data binding** | Per-widget dataset, columns, time range (`15m`–`7d`), KPI metric + aggregation |
 | **Themes** | 5 shadcn presets — Neutral, Stone, Mauve, Taupe, Olive |
@@ -34,6 +35,17 @@ Most market tools force a fixed workflow. PargalıIbrahim Canvas gives you a sur
 **Stack:** Vite · React 19 · TypeScript · Tailwind v4 · shadcn/ui · [react-grid-layout](https://github.com/react-grid-layout/react-grid-layout) v2 · FastAPI · DuckDB
 
 The draggable canvas grid is built on **react-grid-layout** — drag, resize, overlap, and layout persistence all flow through it.
+
+## Reusable widget model
+
+Widgets are **templates + instances**:
+
+- Register once in `src/panels.ts` → appears in the **Widgets** menu
+- Each add creates a unique instance (`chart-a1b2c3`) with its own layout slot and settings
+- Shell (title, configure, close, drag) is shared — you only build the **body**
+- Port widget logic from another project: drop libs under `src/lib/`, add a `*Panel.tsx`, wire three files
+
+See [docs/WIDGET-GUIDE.md](docs/WIDGET-GUIDE.md) for the full path.
 
 ## Create your own widget
 
@@ -121,6 +133,14 @@ docs/                      Guides (see docs/README.md)
 | [Recharts](https://recharts.org) | Charts | MIT |
 
 See `package.json` for the full dependency list. Third-party packages keep their original licenses.
+
+## GitHub
+
+Suggested repo **description**:
+
+> A market research workspace canvas for building reusable market research widgets on a draggable canvas.
+
+Suggested **topics**: `reusable-widgets`, `widget-canvas`, `market-research`, `react-grid-layout`, `parquet`, `shadcn-ui`, `fastapi`, `duckdb`
 
 ## License
 

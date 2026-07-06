@@ -2,9 +2,30 @@
 
 How to add or customize widgets in PargalıIbrahim Canvas. Shell, grid, and themes: [THEME-GUIDE.md](./THEME-GUIDE.md). Backend API: [../backend/README.md](../backend/README.md).
 
-PargalıIbrahim Canvas is widget-native: start with built-in panels, then add your own market research widgets.
+PargalıIbrahim Canvas is widget-native: start with built-in panels, then add your own **reusable** market research widgets.
 
 **Scope:** Widget **body** only — table, chart, KPI content. The shell (title bar, configure action, close, resize) lives in `App.tsx` as a shadcn `Card` and is shared by all widgets.
+
+---
+
+## Reusable widget model
+
+A widget is reusable in three ways:
+
+| Concept | What it means |
+|---------|----------------|
+| **Template** | One entry in `PANEL_CATALOG` (`panels.ts`) — title, kind, default size |
+| **Instance** | Each add from the Widgets menu → unique id (`chart-a1b2c3`), own settings and grid slot |
+| **Portable** | Body + libs from another project; wire via `panels.ts` + `PanelContent.tsx` + `*Panel.tsx` |
+
+Example: **Market Times** — session logic in `src/lib/marketSessions.ts`, body in `MarketTimesPanel.tsx`, no backend required.
+
+Rules:
+
+- Register the template once; users can add as many instances as they need
+- Key per-instance state by `panelId` (dataset, range, KPI config)
+- Do not duplicate shell chrome in widget bodies
+- Prefer shadcn semantic tokens over hardcoded colors when porting CSS
 
 ---
 
@@ -133,6 +154,7 @@ Add `panel.kind` to `CONFIGURABLE_PANEL_KINDS` in `panels.ts` to show the Config
 | Widget | kind | Data hook | Configure fields |
 |--------|------|-----------|------------------|
 | Notes | `notes` | `notesStorage` | — |
+| Market Times | `market-times` | `marketSessions` lib | — |
 | Data Table | `data-table` | `useWidgetParquetData` | dataset, range, columns |
 | Chart | `chart` | `useWidgetParquetData` | dataset, range |
 | KPI Card | `kpi-card` | `useKpiCardData` | dataset, range, metric, aggregation |

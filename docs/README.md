@@ -17,7 +17,7 @@ Running locally at `localhost:5173` with the widget picker:
 | Guide | What it covers |
 |-------|----------------|
 | [../README.md](../README.md) | Product overview, quick start, custom widget path |
-| [WIDGET-GUIDE.md](./WIDGET-GUIDE.md) | Add widgets, wire Parquet data, standard widget settings |
+| [WIDGET-GUIDE.md](./WIDGET-GUIDE.md) | Reusable widget model, add widgets, wire Parquet data |
 | [THEME-GUIDE.md](./THEME-GUIDE.md) | Color themes, shadcn tokens, shell rules |
 | [../backend/README.md](../backend/README.md) | FastAPI + DuckDB API, streams, KPI, time range |
 | [NEXT-STEPS.md](./NEXT-STEPS.md) | Roadmap — done vs remaining |
@@ -35,13 +35,14 @@ Running locally at `localhost:5173` with the widget picker:
 
 **Build a workspace**
 
-1. Add a widget: Chart, KPI Card, Data Table, Notes, Dashboard, Reports
+1. Add a widget: Chart, KPI Card, Data Table, Notes, Market Times, Dashboard, Reports
 2. Open **Configure** for dataset, range, fields, and calculations
 3. Drag, resize, stack panels — layout persists in `localStorage`
 
-**Create a widget**
+**Create a reusable widget**
 
-- New widget → `panels.ts` + panel component + `PanelContent.tsx` ([WIDGET-GUIDE](./WIDGET-GUIDE.md))
+- Register template → `panels.ts` + panel component + `PanelContent.tsx` ([WIDGET-GUIDE](./WIDGET-GUIDE.md))
+- Port from another project → libs in `src/lib/`, body in `*Panel.tsx`, same 3-file wire-up
 - New theme → `index.css` + `themeStorage.ts` ([THEME-GUIDE](./THEME-GUIDE.md))
 - New API endpoint → `backend/app/` ([backend README](../backend/README.md))
 
@@ -55,6 +56,7 @@ Running locally at `localhost:5173` with the widget picker:
 | Dashboard | KPI + chart + table | Combined panel |
 | Reports | Preview tab | Export mock; saved queries planned |
 | Notes | localStorage | Markdown edit + preview |
+| Market Times | — | Exchange sessions, open/close countdown |
 
 ## Data layout
 

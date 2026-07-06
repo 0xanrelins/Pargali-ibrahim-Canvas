@@ -12,31 +12,52 @@ The product gives users a blank surface where they can place, arrange, and combi
 
 - Research-first
 - Widget-native
+- **Reusable widgets** — template once, many instances, portable across projects
 - Trading-aware
 - Canvas-based
 - Customizable by default
 
 ## Main Promise
 
-Start from a blank canvas, add built-in widgets, or create your own panels.
+Start from a blank canvas, add built-in widgets, or create your own reusable panels.
+
+## Reusable widget model
+
+**Reusable widget** means three things in this project:
+
+1. **Template** — one catalog entry in `panels.ts` (`chart`, `market-times`, …)
+2. **Instances** — each add from the Widgets menu creates a unique id (`chart-a1b2c3`) with its own config and layout slot
+3. **Portable** — widget body + libs can be brought from another project; shell and grid stay in `App.tsx`
+
+Messaging hierarchy:
+
+| Layer | Phrase |
+|-------|--------|
+| Hero | market research workspace canvas |
+| Product | custom widgets · built-in widgets |
+| Technical | reusable widget model |
+
+Do **not** replace the hero with “reusable widget” alone — use it as a supporting keyword in README, docs, and GitHub topics.
 
 ## Short Messaging
 
 - Build your own market workspace.
 - A market research workspace canvas.
 - Bring your own trading and research widgets.
+- Reusable widgets — register once, add many instances.
 - One canvas for charts, KPIs, notes, datasets, and workflows.
 
 ## GitHub / README Direction
 
 Use this framing instead of "trading terminal shell":
 
-> A market research workspace canvas for custom trading and research widgets.
+> A market research workspace canvas for building reusable custom trading and research widgets.
 
 Support it with:
 
 - Built-in widgets for common workflows
-- Easy custom widget creation
+- **Reusable widget model** — template + instances + portable bodies
+- Easy custom widget creation (3-file flow)
 - Local Parquet data layer
 - Persistent draggable canvas layout
 - shadcn themes and UI components
@@ -48,9 +69,9 @@ Support it with:
 ```md
 # PargalıIbrahim Canvas
 
-A market research workspace canvas for building custom trading and research widgets.
+A market research workspace canvas for building reusable custom trading and research widgets.
 
-Start from a blank canvas. Add built-in panels. Create your own widgets for charts, KPIs, notes, datasets, bots, and workflows.
+Start from a blank canvas. Add built-in panels. Create your own widgets — register once, add many instances, port from other projects.
 
 ![PargalıIbrahim Canvas](docs/terminal-example.png)
 ```
@@ -76,8 +97,16 @@ PargalıIbrahim Canvas gives users a surface they can reshape around their own r
 - KPI Card
 - Data Table
 - Notes
+- Market Times
 - Reports
 - Dashboard
+
+### Reusable widget model
+
+- **Template** in `src/panels.ts` — defines kind, title, default size
+- **Instance** per add — unique id, own settings, own grid slot
+- **Body only** — shared Card shell in `App.tsx`; widget code lives in `*Panel.tsx`
+- **Portable** — bring libs + panel from another repo (e.g. Market Times from a prior terminal project)
 
 ### Create your own widget
 
@@ -156,7 +185,7 @@ Not every widget needs every setting, but the location and interaction model sho
 - Saved query / report widget
 - Plugin-like widget folder structure
 - README positioning refresh
-- GitHub description/topics refresh
+- GitHub description/topics refresh (`reusable-widgets`, `widget-canvas`, `market-research`)
 - Widget-first docs index
 - Example custom widget walkthrough
 

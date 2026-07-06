@@ -44,4 +44,11 @@ export const WIDGET_SETTINGS_FIELDS_BY_KIND: Record<PanelKind, WidgetSettingsFie
     metric: false,
     aggregation: false,
   },
+  'market-times': {
+    dataset: false,
+    timeRange: false,
+    columns: false,
+    metric: false,
+    aggregation: false,
+  },
 }
